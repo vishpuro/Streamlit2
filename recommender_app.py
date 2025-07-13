@@ -140,8 +140,12 @@ elif model_selection == backend.models[2]:
     cluster_no = st.sidebar.slider('Number of Clusters',
                                    min_value=0, max_value=50,
                                    value=20, step=1)
-else:
-    pass
+
+elif model_selection == backend.models[4]:
+    k_max = st.sidebar.slider('Define the K in K-Nearest Neighbours',
+                                              min_value=10, max_value=100,
+                                              value=40, step=10)
+    params['k_max'] = k_max
 
 
 # Training
@@ -149,20 +153,34 @@ st.sidebar.subheader('3. Training: ')
 training_button = st.sidebar.button("Train Model")
 training_text = st.sidebar.text('')
 # Start training process
-if training_button:
-    train(model_selection, params)
+#if training_button and selected_courses_df.shape[0] > 0:
+    ########################============= moved from Prediction ============###########################################
+#    new_id = backend.add_new_ratings(selected_courses_df['COURSE_ID'].values)
+#    train(model_selection, params)
 
 
 # Prediction
 st.sidebar.subheader('4. Prediction')
+
+
+
+
+
 # Start prediction process
 pred_button = st.sidebar.button("Recommend New Courses")
+
 if pred_button and selected_courses_df.shape[0] > 0:
     # Create a new id for current user session
+    
+    # Start training process
     new_id = backend.add_new_ratings(selected_courses_df['COURSE_ID'].values)
+    
+    train(model_selection, params) 
+    
     user_ids = [new_id]
     res_df = predict(model_selection, user_ids, params)
     res_df = res_df[['COURSE_ID', 'SCORE']]
     course_df = load_courses()
     res_df = pd.merge(res_df, course_df, on=["COURSE_ID"]).drop('COURSE_ID', axis=1)
     st.table(res_df)
+
