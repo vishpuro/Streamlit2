@@ -4,4 +4,4 @@ streamlit
 streamlit-aggrid
 scikit-learn
 cython
-scikit-surprise
+scikit-surprise==1.1.3
