@@ -1,5 +1,5 @@
 import pandas as pd
-import surprise
+from surprise.dataset import DatasetAutoFolds
 from surprise import KNNBasic
 from surprise import Dataset, Reader
 from surprise.model_selection import train_test_split
@@ -126,7 +126,7 @@ def predict(model_name, user_ids, params):
         if model_name==models[4]:
             reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
             course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
-            trainset=surprise.dataset.DatasetAutoFolds.build_full_trainset(course_dataset)
+            trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
             model=KNNBasic(k=k_max)
             model.fit(trainset)
             ratings_df = load_ratings()
