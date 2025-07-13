@@ -2,5 +2,4 @@ numpy
 pandas
 streamlit
 streamlit-aggrid
-scikit-learn
-scikit-surprise
+
