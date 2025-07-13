@@ -3,6 +3,5 @@ pandas
 streamlit
 streamlit-aggrid
 scikit-learn
-tensorflow
 scipy
 scikit-surprise==1.1.4
