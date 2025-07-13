@@ -4,4 +4,6 @@ streamlit
 streamlit-aggrid
 scikit-learn
 cython
+tensorflow
+scipy
 scikit-surprise==1.1.4
