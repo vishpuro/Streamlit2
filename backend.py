@@ -1,4 +1,9 @@
 import pandas as pd
+import surprise
+from surprise import KNNBasic
+from surprise import Dataset, Reader
+from surprise.model_selection import train_test_split
+
 
 models = ("Course Similarity",
           "User Profile",
@@ -36,7 +41,7 @@ def add_new_ratings(new_courses):
         ratings_df = load_ratings()
         new_id = ratings_df['user'].max() + 1
         users = [new_id] * len(new_courses)
-        ratings = [3.0] * len(new_courses)
+        ratings = [4.0] * len(new_courses)
         res_dict['user'] = users
         res_dict['item'] = new_courses
         res_dict['rating'] = ratings
@@ -80,14 +85,23 @@ def course_similarity_recommendations(idx_id_dict, id_idx_dict, enrolled_course_
 # Model training
 def train(model_name, params):
     # TODO: Add model training code here
+    if model_name==models[4]:
+        reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
+        course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
+        trainset=surprise.dataset.DatasetAutoFolds.build_full_trainset(course_dataset)
+        model=KNNBasic()
+        model.fit(trainset)
     pass
 
 
 # Prediction
 def predict(model_name, user_ids, params):
     sim_threshold = 0.6
+    k_max=40
     if "sim_threshold" in params:
         sim_threshold = params["sim_threshold"] / 100.0
+    if "k" in params:
+        k=params["k_max"]
     idx_id_dict, id_idx_dict = get_doc_dicts()
     sim_matrix = load_course_sims().to_numpy()
     users = []
@@ -97,6 +111,7 @@ def predict(model_name, user_ids, params):
 
     for user_id in user_ids:
         # Course Similarity model
+        ######################################################### model 0 ######################################################################
         if model_name == models[0]:
             ratings_df = load_ratings()
             user_ratings = ratings_df[ratings_df['user'] == user_id]
@@ -107,7 +122,27 @@ def predict(model_name, user_ids, params):
                     users.append(user_id)
                     courses.append(key)
                     scores.append(score)
-        # TODO: Add prediction model code here
+        ######################################################### model 4 ######################################################################            
+        if model_name==models[4]:
+            reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
+            course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
+            trainset=surprise.dataset.DatasetAutoFolds.build_full_trainset(course_dataset)
+            model=KNNBasic(k=k_max)
+            model.fit(trainset)
+            ratings_df = load_ratings()
+            user_ratings = ratings_df[ratings_df['user'] == user_id]
+            enrolled_course_ids = user_ratings['item'].to_list()
+            all_courses = set(idx_id_dict.values())
+            unselected_course_ids = all_courses.difference(enrolled_course_ids)
+            test_data=ratings_df[ratings_df['item'].isin(unselected_course_ids)]
+            
+            for i in range(test_data.shape[0]):
+                result=model.predict(uid=test_data.loc[i,'user'],iid=test_data.loc[i,'item'],rui=test_data.loc[i,'rating'])
+                users.append(int(result.user))
+                courses.append(result.item)
+                scores.append(float(result.est))
+                
+            
 
     res_dict['USER'] = users
     res_dict['COURSE_ID'] = courses
