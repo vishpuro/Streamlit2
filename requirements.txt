@@ -3,4 +3,4 @@ pandas
 streamlit
 streamlit-aggrid
 scikit-learn
-surprise
+scikit-surprise
