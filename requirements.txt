@@ -4,4 +4,4 @@ streamlit
 streamlit-aggrid
 scipy
 scikit-learn
-tensorflow==2.5.3
+tensorflow
