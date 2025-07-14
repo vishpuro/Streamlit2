@@ -47,10 +47,10 @@ def load_bow():
 def init__recommender_app():
 
 	with st.spinner('Loading datasets...'):
-   	ratings_df = load_ratings()
-	sim_df = load_course_sims()
-	course_df = load_courses()
-	course_bow_df = load_bow()
+   		ratings_df = load_ratings()
+		sim_df = load_course_sims()
+		course_df = load_courses()
+		course_bow_df = load_bow()
 
 	# Select courses
 	st.success('Datasets loaded successfully...')
@@ -85,13 +85,13 @@ def train(model_name, params):
 
 	if model_name == backend.models[0]:
    	# Start training course similarity model
-      	with st.spinner('Training...'):
-      	time.sleep(0.5)
-         backend.train(model_name)
-      	st.success('Done!')
+      		with st.spinner('Training...'):
+      			time.sleep(0.5)
+         		backend.train(model_name)
+      		st.success('Done!')
     	# TODO: Add other model training code here
-	elif model_name == backend.models[1]:
-		pass
+	#elif model_name == backend.models[1]:
+	#	pass
    	else:
       		pass
 
@@ -102,7 +102,7 @@ def predict(model_name, user_ids, params):
 	with st.spinner('Generating course recommendations: '):
 		time.sleep(0.5)
       		res = backend.predict(model_name, user_ids, params)
-   		st.success('Recommendations generated!')
+   	st.success('Recommendations generated!')
    	return res
 
 
