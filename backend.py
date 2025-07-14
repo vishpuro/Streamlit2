@@ -270,7 +270,7 @@ def predict(model_name, user_ids, params):
 						silhouette.append(silhouette_score(features, labels=labels))
 					else:
 						silhouette.append(np.nan)
-					my_bar.progress(i/30, text="Fitting k "+str(i)+" of 30")
+					my_bar.progress(i/30, text="Fitting k: "+str(i)+" of 30")
 				my_bar.empty()
 				
 				n_clust=np.argmax(silhouette[3:])+1
@@ -352,7 +352,7 @@ def predict(model_name, user_ids, params):
 				
 				inertia=[]
 				silhouette=[]
-				progress_text = "fitting..."
+				progress_text = "Fitting..."
 				my_bar = st.progress(0, text=progress_text)
 				for i in range(1,30,1):
 					model=KMeans(n_clusters=i).fit(pca_df)
@@ -362,7 +362,7 @@ def predict(model_name, user_ids, params):
 						silhouette.append(silhouette_score(pca_df, labels=labels))
 					else:
 						silhouette.append(np.nan)
-					my_bar.progress(i/30, text="Fitting k "+str(i)+" of 30")
+					my_bar.progress(i/30, text="Fitting k: "+str(i)+" of 30")
 				my_bar.empty()
 				
 				n_clust=np.argmax(silhouette[3:])+1
