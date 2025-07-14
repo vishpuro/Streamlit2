@@ -142,8 +142,7 @@ def train(model_name, params):
                     model=KNNBasic()
                     model.fit(trainset)
               
-          elif:
-                    pass
+          pass
 
 
 # Prediction
