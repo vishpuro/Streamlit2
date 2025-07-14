@@ -307,6 +307,7 @@ def predict(model_name, user_ids, params):
 				res_dict['USER'] = users
 				res_dict['COURSE_ID'] = courses
 				res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID'])
+				res_df=res_df[res_df['USER']==user_id]
 		######################################################### model 3 Clustering ###########################################################
 		if model_name == models[3]:
 			with st.status("Starting Clustering (PCA) model...", expanded=True):
@@ -399,6 +400,8 @@ def predict(model_name, user_ids, params):
 				res_dict['USER'] = users
 				res_dict['COURSE_ID'] = courses
 				res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID'])
+				res_df=res_df[res_df['USER']==user_id]
+				
 		######################################################### model 4 knn-surprise doesn't work#############################################            
 		#        if model_name==models[4]:
 		#            reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
