@@ -47,7 +47,7 @@ def load_bow():
 def init__recommender_app():
 
 	with st.spinner('Loading datasets...'):
-   		ratings_df = load_ratings()
+		ratings_df = load_ratings()
 		sim_df = load_course_sims()
 		course_df = load_courses()
 		course_bow_df = load_bow()
