@@ -392,9 +392,9 @@ def predict(model_name, user_ids, params):
 	                                                  user_courses = test_users_labelled_orig[(test_users_labelled_orig['user']==user)]['item'].tolist()
 	                                                  recommended_courses = list(set(courses_in_cluster)-set(user_courses))
 	                    
-	                                        for rc in recommended_courses:
-	                                                  users.append(user)
-	                                                  courses.append(rc)
+	                                        	for rc in recommended_courses:
+	                                                	users.append(user)
+	                                                	courses.append(rc)
 	                            
 	                                        res_dict['USER'] = users
 	                                        res_dict['COURSE_ID'] = courses
