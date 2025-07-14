@@ -256,20 +256,20 @@ def predict(model_name, user_ids, params):
                                         # Standardizing the selected features (feature_names) in the user_profile_df DataFrame
                                         features = scaler.fit_transform(user_profile_df.iloc[:,1:])
 
-                                        st.write("Fitting KMeans...")
+					st.write("Fitting KMeans...")
                                                                                 
                                         inertia=[]
                                         silhouette=[]
 					progress_text = "fitting..."
 					my_bar = st.progress(0, text=progress_text)
-                                        for i in range(1,30,1):
-                                        	model=KMeans(n_clusters=i).fit(features)
-                                        	inertia.append(model.inertia_)
-                                        	labels=model.predict(features)
-                                        	if len(np.unique(labels))>=2:
-                                                	silhouette.append(silhouette_score(features, labels=labels))
-                                                else:
-                                                        silhouette.append(np.nan)
+					for i in range(1,30,1):
+						model=KMeans(n_clusters=i).fit(features)
+						inertia.append(model.inertia_)
+						labels=model.predict(features)
+						if len(np.unique(labels))>=2:
+							silhouette.append(silhouette_score(features, labels=labels))
+						else:
+							silhouette.append(np.nan)
 						my_bar.progress(percent_complete + 1, text=progress_text)
 					my_bar.empty()
                                 
