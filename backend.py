@@ -136,11 +136,11 @@ def profile_generate_recommendation_scores(user_id,unknown_courses,user_profile_
 def train(model_name, params):
           # TODO: Add model training code here
           if model_name==models[4]:
-          reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
-          course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
-          trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
-          model=KNNBasic()
-          model.fit(trainset)
+                    reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
+                    course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
+                    trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
+                    model=KNNBasic()
+                    model.fit(trainset)
               
           elif:
                     pass
