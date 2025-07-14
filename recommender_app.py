@@ -8,10 +8,10 @@ from st_aggrid.grid_options_builder import GridOptionsBuilder
 from st_aggrid import GridUpdateMode, DataReturnMode
 
 ####--- Sklearn ---####
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from sklearn.metrics import silhouette_score
+#from sklearn.cluster import KMeans
+#from sklearn.preprocessing import StandardScaler
+#from sklearn.decomposition import PCA
+#from sklearn.metrics import silhouette_score
 
 # Basic webpage setup
 st.set_page_config(
