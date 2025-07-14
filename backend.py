@@ -270,7 +270,7 @@ def predict(model_name, user_ids, params):
 						silhouette.append(silhouette_score(features, labels=labels))
 					else:
 						silhouette.append(np.nan)
-					my_bar.progress(percent_complete + 1, text=progress_text)
+					my_bar.progress(i*10/3, text=progress_text)
 				my_bar.empty()
 				
 				n_clust=np.argmax(silhouette[3:])+1
@@ -362,7 +362,7 @@ def predict(model_name, user_ids, params):
 						silhouette.append(silhouette_score(pca_df, labels=labels))
 					else:
 						silhouette.append(np.nan)
-					my_bar.progress(percent_complete + 1, text=progress_text)
+					my_bar.progress(i*10/3, text=progress_text)
 				my_bar.empty()
 				
 				n_clust=np.argmax(silhouette[3:])+1
