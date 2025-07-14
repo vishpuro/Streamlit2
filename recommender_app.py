@@ -48,53 +48,52 @@ def init__recommender_app():
 
 	with st.spinner('Loading datasets...'):
    	ratings_df = load_ratings()
-      sim_df = load_course_sims()
-      course_df = load_courses()
-      course_bow_df = load_bow()
+	sim_df = load_course_sims()
+	course_df = load_courses()
+	course_bow_df = load_bow()
 
-# Select courses
+	# Select courses
 	st.success('Datasets loaded successfully...')
 
-   st.markdown("""---""")
-   st.subheader("Select courses that you have audited or completed: ")
+   	st.markdown("""---""")
+   	st.subheader("Select courses that you have audited or completed: ")
 
-   # Build an interactive table for `course_df`
-   gb = GridOptionsBuilder.from_dataframe(course_df)
-   gb.configure_default_column(enablePivot=True, enableValue=True, enableRowGroup=True)
-   gb.configure_selection(selection_mode="multiple", use_checkbox=True)
-   gb.configure_side_bar()
-   grid_options = gb.build()
-
-   # Create a grid response
-   response = AgGrid(
+	# Build an interactive table for `course_df`
+	gb = GridOptionsBuilder.from_dataframe(course_df)
+	gb.configure_default_column(enablePivot=True, enableValue=True, enableRowGroup=True)
+	gb.configure_selection(selection_mode="multiple", use_checkbox=True)
+	gb.configure_side_bar()
+	grid_options = gb.build()
+	
+	# Create a grid response
+	response = AgGrid(
 		course_df,
-      gridOptions=grid_options,
-      enable_enterprise_modules=True,
-      update_mode=GridUpdateMode.MODEL_CHANGED,
-      data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
-      fit_columns_on_grid_load=False,
-	)
-
+	      	gridOptions=grid_options,
+	      	enable_enterprise_modules=True,
+	      	update_mode=GridUpdateMode.MODEL_CHANGED,
+	      	data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
+	      	fit_columns_on_grid_load=False,)
+	
 	results = pd.DataFrame(response["selected_rows"], columns=['COURSE_ID', 'TITLE', 'DESCRIPTION'])
-   results = results[['COURSE_ID', 'TITLE']]
-   st.subheader("Your courses: ")
-   st.table(results)
-   return results
+	results = results[['COURSE_ID', 'TITLE']]
+	st.subheader("Your courses: ")
+	st.table(results)
+	return results
 
 
 def train(model_name, params):
 
 	if model_name == backend.models[0]:
    	# Start training course similarity model
-      with st.spinner('Training...'):
+      	with st.spinner('Training...'):
       	time.sleep(0.5)
          backend.train(model_name)
       	st.success('Done!')
-    # TODO: Add other model training code here
+    	# TODO: Add other model training code here
 	elif model_name == backend.models[1]:
 		pass
-   else:
-      pass
+   	else:
+      		pass
 
 
 def predict(model_name, user_ids, params):
@@ -102,8 +101,8 @@ def predict(model_name, user_ids, params):
 	# Start making predictions based on model name, test user ids, and parameters
 	with st.spinner('Generating course recommendations: '):
 		time.sleep(0.5)
-      res = backend.predict(model_name, user_ids, params)
-   	st.success('Recommendations generated!')
+      		res = backend.predict(model_name, user_ids, params)
+   		st.success('Recommendations generated!')
    	return res
 
 
