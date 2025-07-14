@@ -1,9 +1,17 @@
 import pandas as pd
 import numpy as np
+
+####--- Surprise ---####
 #from surprise.dataset import DatasetAutoFolds
 #from surprise import KNNBasic
 #from surprise import Dataset, Reader
 #from surprise.model_selection import train_test_split
+
+####--- Sklearn ---####
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.metrics import silhouette_score
 
 
 models = ("Course Similarity",
