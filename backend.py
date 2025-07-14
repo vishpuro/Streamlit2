@@ -148,6 +148,190 @@ def combine_cluster_labels(user_ids, labels):
 	return cluster_df
 
 
+
+class RecommenderNet(keras.Model):
+	"""
+	Neural network model for recommendation.
+	
+	This model learns embeddings for users and items, and computes the dot product
+	of the user and item embeddings to predict ratings or preferences.
+	
+	Attributes:
+	- num_users (int): Number of users.
+	- num_items (int): Number of items.
+	- embedding_size (int): Size of embedding vectors for users and items.
+	"""
+	def __init__(self, num_users, num_items, embedding_size=16, **kwargs):
+		"""
+		Constructor.
+		
+		Args:
+		- num_users (int): Number of users.
+		- num_items (int): Number of items.
+		- embedding_size (int): Size of embedding vectors for users and items.
+		"""
+		super(RecommenderNet, self).__init__(**kwargs)
+		self.num_users = num_users
+		self.num_items = num_items
+		self.embedding_size = embedding_size
+		
+		# Define a user_embedding vector
+		# Input dimension is the num_users
+		# Output dimension is the embedding size
+		# A name for the layer, which helps in identifying the layer within the model.
+		
+		self.user_embedding_layer = layers.Embedding(
+			input_dim=num_users,
+			output_dim=embedding_size,
+			name='user_embedding_layer',
+			embeddings_initializer="he_normal",
+			embeddings_regularizer=keras.regularizers.l2(1e-6),
+			)
+		self.user_dense_layer = layers.Dense(
+			units=32,
+			activation='linear',
+			name='item_dense_layer',
+			kernel_initializer="he_normal",
+			activity_regularizer=keras.regularizers.l2(1e-6),
+			)
+		# Define a user bias layer
+		# Bias is applied per user, hence output_dim is set to 1.
+		self.user_bias = layers.Embedding(
+			input_dim=num_users,
+			output_dim=1,
+			name="user_bias")
+		
+		# Define an item_embedding vector
+		# Input dimension is the num_items
+		# Output dimension is the embedding size
+		self.item_embedding_layer = layers.Embedding(
+			input_dim=num_items,
+			output_dim=embedding_size,
+			name='item_embedding_layer',
+			embeddings_initializer="he_normal",
+			embeddings_regularizer=keras.regularizers.l2(1e-6),
+			)
+		self.item_dense_layer = layers.Dense(
+			units=32,
+			activation='linear',
+			name='item_dense_layer',
+			kernel_initializer="he_normal",
+			activity_regularizer=keras.regularizers.l2(1e-6),
+			)
+		# Define an item bias layer
+		# Bias is applied per item, hence output_dim is set to 1.
+		self.item_bias = layers.Embedding(
+			input_dim=num_items,
+			output_dim=1,
+			name="item_bias")
+	
+	def call(self, inputs):
+		"""
+		Method called during model fitting.
+		
+		Args:
+		- inputs (tf.Tensor): Input tensor containing user and item one-hot vectors.
+		
+		Returns:
+		- tf.Tensor: Output tensor containing predictions.
+		"""
+		# Compute the user embedding vector
+		user_vector = self.user_embedding_layer(inputs[:, 0])
+		user_vector = self.user_dense_layer(user_vector)
+		user_vector = self.user_dense_layer(user_vector)
+		# Compute the user bias
+		user_bias = self.user_bias(inputs[:, 0])
+		# Compute the item embedding vector
+		item_vector = self.item_embedding_layer(inputs[:, 1])
+		item_vector = self.item_dense_layer(item_vector)
+		item_vector = self.item_dense_layer(item_vector)
+		# Compute the item bias
+		item_bias = self.item_bias(inputs[:, 1])
+		# Compute dot product of user and item embeddings
+		dot_user_item = tf.tensordot(user_vector, item_vector, 2)
+		# Add all the components (including bias)
+		x = dot_user_item + user_bias + item_bias
+		# Apply ReLU activation function
+		return tf.nn.sigmoid(x)
+
+def process_dataset(raw_data):
+	"""
+	Preprocesses the raw dataset by encoding user and item IDs to indices.
+	
+	Args:
+	- raw_data (DataFrame): Raw dataset containing user, item, and rating information.
+	
+	Returns:
+	- encoded_data (DataFrame): Processed dataset with user and item IDs encoded as indices.
+	- user_idx2id_dict (dict): Dictionary mapping user indices to original user IDs.
+	- course_idx2id_dict (dict): Dictionary mapping item indices to original item IDs.
+	"""
+	
+	encoded_data = raw_data.copy() # Make a copy of the raw dataset to avoid modifying the original data.
+	
+	# Mapping user ids to indices
+	user_list = encoded_data["user"].unique().tolist() # Get unique user IDs from the dataset.
+	user_id2idx_dict = {x: i for i, x in enumerate(user_list)} # Create a dictionary mapping user IDs to indices.
+	user_idx2id_dict = {i: x for i, x in enumerate(user_list)} # Create a dictionary mapping user indices back to original user IDs.
+	
+	# Mapping course ids to indices
+	course_list = encoded_data["item"].unique().tolist() # Get unique item (course) IDs from the dataset.
+	course_id2idx_dict = {x: i for i, x in enumerate(course_list)} # Create a dictionary mapping item IDs to indices.
+	course_idx2id_dict = {i: x for i, x in enumerate(course_list)} # Create a dictionary mapping item indices back to original item IDs.
+	
+	# Convert original user ids to idx
+	encoded_data["user"] = encoded_data["user"].map(user_id2idx_dict)
+	# Convert original course ids to idx
+	encoded_data["item"] = encoded_data["item"].map(course_id2idx_dict)
+	# Convert rating to int
+	encoded_data["rating"] = encoded_data["rating"].values.astype("int")
+	
+	return encoded_data, user_idx2id_dict, course_idx2id_dict # Return the processed dataset and dictionaries mapping indices to original IDs.
+
+def generate_train_test_datasets(dataset, scale=True):
+	"""
+	Splits the dataset into training, validation, and testing sets.
+	
+	Args:
+	- dataset (DataFrame): Dataset containing user, item, and rating information.
+	- scale (bool): Indicates whether to scale the ratings between 0 and 1. Default is True.
+	
+	Returns:
+	- x_train (array): Features for training set.
+	- x_val (array): Features for validation set.
+	- x_test (array): Features for testing set.
+	- y_train (array): Labels for training set.
+	- y_val (array): Labels for validation set.
+	- y_test (array): Labels for testing set.
+	"""
+	
+	min_rating = min(dataset["rating"]) # Get the minimum rating from the dataset
+	max_rating = max(dataset["rating"]) # Get the maximum rating from the dataset
+	
+	dataset = dataset.sample(frac=1, random_state=42) # Shuffle the dataset to ensure randomness
+	x = dataset[["user", "item"]].values # Extract features (user and item indices) from the dataset
+	if scale:
+		# Scale the ratings between 0 and 1 if scale=True
+		y = dataset["rating"].apply(lambda x: (x - min_rating) / (max_rating - min_rating)).values
+	else:
+		# Otherwise, use raw ratings
+		y = dataset["rating"].values
+	
+	# Assuming training on 80% of the data and testing on 10% of the data
+	train_indices = int(0.8 * dataset.shape[0])
+	test_indices = int(0.9 * dataset.shape[0])
+	# Assigning subsets of features and labels for each set
+	x_train, x_val, x_test, y_train, y_val, y_test = (
+		x[:train_indices], # Training features
+		x[train_indices:test_indices], # Validation features
+		x[test_indices:], # Testing features
+		y[:train_indices], # Training labels
+		y[train_indices:test_indices], # Validation labels
+		y[test_indices:], # Testing labels
+		)
+	return x_train, x_val, x_test, y_train, y_val, y_test # Return the training, validation, and testing sets
+
+
 # Model training
 def train(model_name, params):
 	# TODO: Add model training code here
@@ -168,6 +352,7 @@ def predict(model_name, user_ids, params):
 	k_max=40
 	profile_sim_threshold=1
 	n_erollments=100
+	embedding_size=16
 	if "sim_threshold" in params:
 		sim_threshold = params["sim_threshold"] / 100.0
 	if "k" in params:
@@ -176,6 +361,8 @@ def predict(model_name, user_ids, params):
 		profile_sim_threshold = params["profile_sim_threshold"]
 	if "n_erollments" in params:
 		n_erollments = params["n_erollments"]
+	if "embedding_size" in params:
+		embedding_size = params["embedding_size"]
 	idx_id_dict, id_idx_dict = get_doc_dicts()
 	sim_matrix = load_course_sims().to_numpy()
 	users = []
@@ -403,23 +590,57 @@ def predict(model_name, user_ids, params):
 				res_df=res_df[res_df['USER']==user_id]
 				
 		######################################################### model 4 knn-surprise doesn't work#############################################            
-		#        if model_name==models[4]:
-		#            reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
-		#            course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
-		#            trainset=surprise.dataset.DatasetAutoFolds.build_full_trainset(course_dataset)
-		#            model=KNNBasic(k=k_max)
-		#            model.fit(trainset)
-		#            ratings_df = load_ratings()
-		#            user_ratings = ratings_df[ratings_df['user'] == user_id]
-		#            enrolled_course_ids = user_ratings['item'].to_list()
-		#            all_courses = set(idx_id_dict.values())
-		#            unselected_course_ids = all_courses.difference(enrolled_course_ids)
-		#            test_data=ratings_df[ratings_df['item'].isin(unselected_course_ids)]
-		#            
-		#            for i in range(test_data.shape[0]):
-		#                result=model.predict(uid=test_data.loc[i,'user'],iid=test_data.loc[i,'item'],rui=test_data.loc[i,'rating'])
-		#                users.append(int(result.user))
-		#                courses.append(result.item)
-		#                scores.append(float(result.est))
+		#if model_name==models[4]:
+			#reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
+			#course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
+			#trainset=surprise.dataset.DatasetAutoFolds.build_full_trainset(course_dataset)
+			#model=KNNBasic(k=k_max)
+			#model.fit(trainset)
+			#ratings_df = load_ratings()
+			#user_ratings = ratings_df[ratings_df['user'] == user_id]
+			#enrolled_course_ids = user_ratings['item'].to_list()
+			#all_courses = set(idx_id_dict.values())
+			#unselected_course_ids = all_courses.difference(enrolled_course_ids)
+			#test_data=ratings_df[ratings_df['item'].isin(unselected_course_ids)]
+			
+			#for i in range(test_data.shape[0]):
+				#result=model.predict(uid=test_data.loc[i,'user'],iid=test_data.loc[i,'item'],rui=test_data.loc[i,'rating'])
+				#users.append(int(result.user))
+				#courses.append(result.item)
+				#scores.append(float(result.est))
+		######################################################### model 4 knn-surprise doesn't work#############################################            
+		if model_name==models[5]:
+			with st.status("Starting Neural Network model...", expanded=True):
+				ratings_df = load_ratings()
+				course_genres_df = load_course_genres()
+				user_ratings = ratings_df[ratings_df['user'] == user_id]
+				enrolled_course_ids = user_ratings['item'].to_list()
+				all_courses = set(course_genres_df['COURSE_ID'].values)
+				unknown_courses = all_courses.difference(enrolled_course_ids)
+				test_dataset= pd.DataFrame{'user':[user_id]*len(unknown_courses),'item':unknown_courses,'rating':[4]*len(unknown_courses)}
+				
+				
+				encoded_data, user_idx2id_dict, course_idx2id_dict = process_dataset(rating_df)
+				encoded_data_test, user_idx2id_dict_test, course_idx2id_dict_test = process_dataset(test_dataset)
+				x_train, x_val, x_test, y_train, y_val, y_test = generate_train_test_datasets(encoded_data)
+				
+				num_users = len(rating_df['user'].unique())
+				num_items = len(rating_df['item'].unique())
+				
+				model = RecommenderNet(num_users, num_items, embedding_size)
+				early_stopping =EarlyStopping(monitor='val_loss', patience=2)
+				## - call model.compile() method to set up the loss and optimizer and metrics for the model training, you may use
+				model.compile(optimizer=keras.optimizers.Adam(),loss=tf.keras.losses.MeanSquaredError(),metrics=[tf.keras.metrics.RootMeanSquaredError()])
+				history=model.fit(x=x_train, y=y_train,batch_size=64,epochs=10,validation_data=(x_val,y_val),verbose=1,callbacks = [early_stopping,keras.callbacks.ModelCheckpoint("RNN.keras",save_best_only=True)]) 
+				#  - -Save the entire model in the SavedModel format and then save only the weights of the model using 
+				model.save("recommender_net_model.keras")
+				## - - model.save_weights("recommender_net_weights.weights.h5")
+				model.save_weights("recommender_net_weights.weights.h5")
+				pred=model.predict(encoded_data_test[['user','item']].to_numpy())
+				pred=(pred*2)+3
+				test_dataset.loc[:,'rating']=pred
+				res_df=test_dataset
+				res_df.sort_values(by='rating',ascending=False)
+				res_df.rename(columns={'user':'USER','item':'COURSE_ID','rating':'SCORE'},inplace=True)
 		
 	return res_df
