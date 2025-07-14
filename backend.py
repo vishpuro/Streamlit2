@@ -41,21 +41,6 @@ def load_user_profiles():
     return pd.read_csv("user_profiles.csv")
 
 
-course_genre_url = "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-ML321EN-SkillsNetwork/labs/datasets/course_genre.csv"
-course_genres_df = pd.read_csv(course_genre_url)
-
-add_items={}
-add_items['user']=np.zeros(len(course_genres_df.COURSE_ID))+ratings.user.max()+1
-add_items['item']=course_genres_df.COURSE_ID
-add_items['rating']=np.zeros(len(course_genres_df.COURSE_ID))+4
-
-ratings=pd.concat([ratings,pd.DataFrame(add_items)])
-ratings_ordered=ratings.pivot(index='user',columns='item',values='rating').fillna(0).loc[:,course_genres_df.COURSE_ID]
-user_profile_df=pd.DataFrame(np.dot(ratings_ordered,course_genres_df.iloc[:,2:]),index=ratings_ordered.index,columns=course_genres_df.iloc[:,2:].columns)
-
-
-
-
 def add_new_ratings(new_courses):
     res_dict = {}
     if len(new_courses) > 0:
