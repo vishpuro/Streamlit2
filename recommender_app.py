@@ -135,6 +135,7 @@ elif model_selection == backend.models[1]:
     profile_sim_threshold = st.sidebar.slider('User Profile Similarity Threshold %',
                                               min_value=0, max_value=100,
                                               value=50, step=10)
+    params['profile_sim_threshold'] = profile_sim_threshold
 # Clustering model
 elif model_selection == backend.models[2]:
     cluster_no = st.sidebar.slider('Number of Clusters',
@@ -153,16 +154,10 @@ st.sidebar.subheader('3. Training: ')
 training_button = st.sidebar.button("Train Model")
 training_text = st.sidebar.text('')
 # Start training process
-#if training_button and selected_courses_df.shape[0] > 0:
-    ########################============= moved from Prediction ============###########################################
-#    new_id = backend.add_new_ratings(selected_courses_df['COURSE_ID'].values)
-#    train(model_selection, params)
 
 
 # Prediction
 st.sidebar.subheader('4. Prediction')
-
-
 
 
 
