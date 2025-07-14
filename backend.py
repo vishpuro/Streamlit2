@@ -624,6 +624,7 @@ def predict(model_name, user_ids, params):
 				unknown_courses = all_courses.difference(enrolled_course_ids)
 				test_dataset= pd.DataFrame{'user':[user_id]*len(unknown_courses),'item':unknown_courses,'rating':[4]*len(unknown_courses)}
 				
+				st.write("Encoding data...")
 				
 				encoded_data, user_idx2id_dict, course_idx2id_dict = process_dataset(rating_df)
 				encoded_data_test, user_idx2id_dict_test, course_idx2id_dict_test = process_dataset(test_dataset)
@@ -635,12 +636,18 @@ def predict(model_name, user_ids, params):
 				model = RecommenderNet(num_users, num_items, embedding_size)
 				early_stopping =EarlyStopping(monitor='val_loss', patience=2)
 				## - call model.compile() method to set up the loss and optimizer and metrics for the model training, you may use
+				
+				st.write("Fitting Neural Network...")
+				
 				model.compile(optimizer=keras.optimizers.Adam(),loss=tf.keras.losses.MeanSquaredError(),metrics=[tf.keras.metrics.RootMeanSquaredError()])
 				history=model.fit(x=x_train, y=y_train,batch_size=64,epochs=10,validation_data=(x_val,y_val),verbose=1,callbacks = [early_stopping,keras.callbacks.ModelCheckpoint("RNN.keras",save_best_only=True)]) 
 				#  - -Save the entire model in the SavedModel format and then save only the weights of the model using 
 				model.save("recommender_net_model.keras")
 				## - - model.save_weights("recommender_net_weights.weights.h5")
 				model.save_weights("recommender_net_weights.weights.h5")
+				
+				st.write("Predicting results...")
+				
 				pred=model.predict(encoded_data_test[['user','item']].to_numpy())
 				pred=(pred*2)+3
 				test_dataset.loc[:,'rating']=pred
