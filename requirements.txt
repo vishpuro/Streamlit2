@@ -2,5 +2,5 @@ numpy
 pandas
 streamlit
 streamlit-aggrid
-scikit-learn==1.2.2
 scipy
+scikit-learn
