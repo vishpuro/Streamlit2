@@ -143,7 +143,7 @@ elif model_selection == backend.models[1]:
                                               value=1, step=1)
     params['profile_sim_threshold'] = profile_sim_threshold
 # Clustering model
-elif model_selection == backend.models[2]:
+elif (model_selection == backend.models[2])or(model_selection == backend.models[3]):
     n_enrollments = st.sidebar.slider('Number of enrollments to count as a popular course',
                                    min_value=10, max_value=200,
                                    value=100, step=10)
