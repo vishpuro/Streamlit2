@@ -92,8 +92,8 @@ def course_similarity_recommendations(idx_id_dict, id_idx_dict, enrolled_course_
 				if unselect_course not in res:
 					res[unselect_course] = sim
 				else:
-				if sim >= res[unselect_course]:
-					res[unselect_course] = sim
+					if sim >= res[unselect_course]:
+						res[unselect_course] = sim
 	res = {k: v for k, v in sorted(res.items(), key=lambda item: item[1], reverse=True)}
 	return res
 
