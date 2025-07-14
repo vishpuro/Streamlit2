@@ -3,10 +3,10 @@ import pandas as pd
 import numpy as np
 
 ####--- Surprise ---####
-#from surprise.dataset import DatasetAutoFolds
-#from surprise import KNNBasic
-#from surprise import Dataset, Reader
-#from surprise.model_selection import train_test_split
+from surprise.dataset import DatasetAutoFolds
+from surprise import KNNBasic
+from surprise import Dataset, Reader
+from surprise.model_selection import train_test_split
 
 ####--- Sklearn ---####
 from sklearn.cluster import KMeans
@@ -595,24 +595,24 @@ def predict(model_name, user_ids, params):
 				res_df=res_df[res_df['USER']==user_id]
 				
 		######################################################### model 4 knn-surprise doesn't work#############################################            
-		#if model_name==models[4]:
-			#reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
-			#course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
-			#trainset=surprise.dataset.DatasetAutoFolds.build_full_trainset(course_dataset)
-			#model=KNNBasic(k=k_max)
-			#model.fit(trainset)
-			#ratings_df = load_ratings()
-			#user_ratings = ratings_df[ratings_df['user'] == user_id]
-			#enrolled_course_ids = user_ratings['item'].to_list()
-			#all_courses = set(idx_id_dict.values())
-			#unselected_course_ids = all_courses.difference(enrolled_course_ids)
-			#test_data=ratings_df[ratings_df['item'].isin(unselected_course_ids)]
+		if model_name==models[4]:
+			reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
+			course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
+			trainset=surprise.dataset.DatasetAutoFolds.build_full_trainset(course_dataset)
+			model=KNNBasic(k=k_max)
+			model.fit(trainset)
+			ratings_df = load_ratings()
+			user_ratings = ratings_df[ratings_df['user'] == user_id]
+			enrolled_course_ids = user_ratings['item'].to_list()
+			all_courses = set(idx_id_dict.values())
+			unselected_course_ids = all_courses.difference(enrolled_course_ids)
+			test_data=ratings_df[ratings_df['item'].isin(unselected_course_ids)]
 			
-			#for i in range(test_data.shape[0]):
-				#result=model.predict(uid=test_data.loc[i,'user'],iid=test_data.loc[i,'item'],rui=test_data.loc[i,'rating'])
-				#users.append(int(result.user))
-				#courses.append(result.item)
-				#scores.append(float(result.est))
+			for i in range(test_data.shape[0]):
+				result=model.predict(uid=test_data.loc[i,'user'],iid=test_data.loc[i,'item'],rui=test_data.loc[i,'rating'])
+				users.append(int(result.user))
+				courses.append(result.item)
+				scores.append(float(result.est))
 		######################################################### model 4 knn-surprise doesn't work#############################################            
 		if model_name==models[5]:
 			with st.status("Starting Neural Network model...", expanded=True):
