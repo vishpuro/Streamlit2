@@ -622,7 +622,7 @@ def predict(model_name, user_ids, params):
 				enrolled_course_ids = user_ratings['item'].to_list()
 				all_courses = set(course_genres_df['COURSE_ID'].values)
 				unknown_courses = all_courses.difference(enrolled_course_ids)
-				test_dataset= pd.DataFrame{'user':[user_id]*len(unknown_courses),'item':unknown_courses,'rating':[4]*len(unknown_courses)}
+				test_dataset= pd.DataFrame({'user':[user_id]*len(unknown_courses),'item':unknown_courses,'rating':[4]*len(unknown_courses)})
 				
 				st.write("Encoding data...")
 				
