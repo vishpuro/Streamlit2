@@ -14,11 +14,7 @@ from st_aggrid import GridUpdateMode, DataReturnMode
 #from sklearn.metrics import silhouette_score
 
 # Basic webpage setup
-st.set_page_config(
-	page_title="Course Recommender System",
-	layout="wide",
-	initial_sidebar_state="expanded",
-)
+st.set_page_config(page_title="Course Recommender System",layout="wide",initial_sidebar_state="expanded")
 
 
 # ------- Functions ------
@@ -54,9 +50,8 @@ def init__recommender_app():
 
 	# Select courses
 	st.success('Datasets loaded successfully...')
-
-   	st.markdown("""---""")
-   	st.subheader("Select courses that you have audited or completed: ")
+	st.markdown("""---""")
+	st.subheader("Select courses that you have audited or completed: ")
 
 	# Build an interactive table for `course_df`
 	gb = GridOptionsBuilder.from_dataframe(course_df)
@@ -68,11 +63,11 @@ def init__recommender_app():
 	# Create a grid response
 	response = AgGrid(
 		course_df,
-	      	gridOptions=grid_options,
-	      	enable_enterprise_modules=True,
-	      	update_mode=GridUpdateMode.MODEL_CHANGED,
-	      	data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
-	      	fit_columns_on_grid_load=False,)
+		gridOptions=grid_options,
+		enable_enterprise_modules=True,
+		update_mode=GridUpdateMode.MODEL_CHANGED,
+		data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
+		fit_columns_on_grid_load=False,)
 	
 	results = pd.DataFrame(response["selected_rows"], columns=['COURSE_ID', 'TITLE', 'DESCRIPTION'])
 	results = results[['COURSE_ID', 'TITLE']]
@@ -84,16 +79,16 @@ def init__recommender_app():
 def train(model_name, params):
 
 	if model_name == backend.models[0]:
-   	# Start training course similarity model
-      		with st.spinner('Training...'):
-      			time.sleep(0.5)
-         		backend.train(model_name)
-      		st.success('Done!')
-    	# TODO: Add other model training code here
+	# Start training course similarity model
+		with st.spinner('Training...'):
+			time.sleep(0.5)
+			backend.train(model_name)
+		st.success('Done!')
+	# TODO: Add other model training code here
 	#elif model_name == backend.models[1]:
 	#	pass
-   	else:
-      		pass
+	else:
+		pass
 
 
 def predict(model_name, user_ids, params):
