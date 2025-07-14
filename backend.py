@@ -260,7 +260,7 @@ def predict(model_name, user_ids, params):
 				
 				inertia=[]
 				silhouette=[]
-				progress_text = "fitting..."
+				progress_text = "Fitting..."
 				my_bar = st.progress(0, text=progress_text)
 				for i in range(1,30,1):
 					model=KMeans(n_clusters=i).fit(features)
@@ -290,7 +290,7 @@ def predict(model_name, user_ids, params):
 				## - First get all courses belonging to the same cluster and figure out what are the popular ones (such as course enrollments beyond a threshold like 100)
 				cluster_courses=[courses_cluster_grouped[(courses_cluster_grouped['cluster']==i)&(courses_cluster_grouped['enrollments']>=n_erollments)].sort_values(by='enrollments',ascending=False)['item'].tolist() for i in range(courses_cluster_grouped['cluster'].max()+1)]
 				
-				st.write("Outputing")
+				st.write("Outputing results...")
 				
 				users = []
 				courses = []
@@ -343,7 +343,7 @@ def predict(model_name, user_ids, params):
 				evr_cumsum=np.cumsum(evr)
 				n_components=sum(evr_cumsum<0.9)+1
 				
-				st.write("Refitting with n_components = ",n_components)
+				st.write("Transforming Data with n_components = ",n_components)
 				
 				pca_model=PCA(n_components=n_components)
 				pca_df=pd.DataFrame(pca_model.fit_transform(features),columns=['PC'+str(i) for i in range(n_components)])
@@ -382,14 +382,14 @@ def predict(model_name, user_ids, params):
 				## - First get all courses belonging to the same cluster and figure out what are the popular ones (such as course enrollments beyond a threshold like 100)
 				cluster_courses=[courses_cluster_grouped[(courses_cluster_grouped['cluster']==i)&(courses_cluster_grouped['enrollments']>=n_erollments)].sort_values(by='enrollments',ascending=False)['item'].tolist() for i in range(courses_cluster_grouped['cluster'].max()+1)]
 				
-				st.write("Outputing")
+				st.write("Outputing results...")
 				
 				users = []
 				courses = []
 				for user in user_labels.index:
 					cluster = int(user_labels.loc[user].tolist()[0])
 					courses_in_cluster = cluster_courses[cluster]
-					user_courses = test_users_labelled_orig[(test_users_labelled_orig['user']==user)]['item'].tolist()
+					user_courses = test_users_labelled_pca[(test_users_labelled_pca['user']==user)]['item'].tolist()
 					recommended_courses = list(set(courses_in_cluster)-set(user_courses))
 					
 					for rc in recommended_courses:
