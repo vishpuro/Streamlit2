@@ -133,8 +133,8 @@ if model_selection == backend.models[0]:
 # User profile model
 elif model_selection == backend.models[1]:
     profile_sim_threshold = st.sidebar.slider('User Profile Similarity Threshold %',
-                                              min_value=0, max_value=200,
-                                              value=0, step=10)
+                                              min_value=0, max_value=100,
+                                              value=1, step=1)
     params['profile_sim_threshold'] = profile_sim_threshold
 # Clustering model
 elif model_selection == backend.models[2]:
