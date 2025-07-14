@@ -1,6 +1,7 @@
+import streamlit as st
 import pandas as pd
 import numpy as np
-import streamlit as st
+
 
 ####--- Surprise ---####
 #from surprise.dataset import DatasetAutoFolds
@@ -27,125 +28,125 @@ models = ("Course Similarity",
 
 
 def load_ratings():
-    return pd.read_csv("ratings.csv")
+          return pd.read_csv("ratings.csv")
 
 
 def load_course_sims():
-    return pd.read_csv("sim.csv")
+          return pd.read_csv("sim.csv")
 
 
 def load_courses():
-    df = pd.read_csv("course_processed.csv")
-    df['TITLE'] = df['TITLE'].str.title()
-    return df
+          df = pd.read_csv("course_processed.csv")
+          df['TITLE'] = df['TITLE'].str.title()
+          return df
 
 
 def load_bow():
-    return pd.read_csv("courses_bows.csv")
+          return pd.read_csv("courses_bows.csv")
 
 def load_course_genres():
-    return pd.read_csv("course_genres.csv")
+          return pd.read_csv("course_genres.csv")
 
 def load_user_profiles():
-    return pd.read_csv("user_profiles.csv")
+          return pd.read_csv("user_profiles.csv")
 
 
 def add_new_ratings(new_courses):
-    res_dict = {}
-    if len(new_courses) > 0:
-        # Create a new user id, max id + 1
-        ratings_df = load_ratings()
-        new_id = ratings_df['user'].max() + 1
-        users = [new_id] * len(new_courses)
-        ratings = [4.0] * len(new_courses)
-        res_dict['user'] = users
-        res_dict['item'] = new_courses
-        res_dict['rating'] = ratings
-        new_df = pd.DataFrame(res_dict)
-        updated_ratings = pd.concat([ratings_df, new_df])
-        updated_ratings.to_csv("ratings.csv", index=False)
-        return new_id
+          res_dict = {}
+          if len(new_courses) > 0:
+                    # Create a new user id, max id + 1
+                    ratings_df = load_ratings()
+                    new_id = ratings_df['user'].max() + 1
+                    users = [new_id] * len(new_courses)
+                    ratings = [4.0] * len(new_courses)
+                    res_dict['user'] = users
+                    res_dict['item'] = new_courses
+                    res_dict['rating'] = ratings
+                    new_df = pd.DataFrame(res_dict)
+                    updated_ratings = pd.concat([ratings_df, new_df])
+                    updated_ratings.to_csv("ratings.csv", index=False)
+          return new_id
 
 
 # Create course id to index and index to id mappings
 def get_doc_dicts():
-    bow_df = load_bow()
-    grouped_df = bow_df.groupby(['doc_index', 'doc_id']).max().reset_index(drop=False)
-    idx_id_dict = grouped_df[['doc_id']].to_dict()['doc_id']
-    id_idx_dict = {v: k for k, v in idx_id_dict.items()}
-    del grouped_df
-    return idx_id_dict, id_idx_dict
+	bow_df = load_bow()
+	grouped_df = bow_df.groupby(['doc_index', 'doc_id']).max().reset_index(drop=False)
+	idx_id_dict = grouped_df[['doc_id']].to_dict()['doc_id']
+	id_idx_dict = {v: k for k, v in idx_id_dict.items()}
+	del grouped_df
+	return idx_id_dict, id_idx_dict
 
 
 def course_similarity_recommendations(idx_id_dict, id_idx_dict, enrolled_course_ids, sim_matrix):
-    all_courses = set(idx_id_dict.values())
-    unselected_course_ids = all_courses.difference(enrolled_course_ids)
-    # Create a dictionary to store your recommendation results
-    res = {}
-    # First find all enrolled courses for user
-    for enrolled_course in enrolled_course_ids:
-        for unselect_course in unselected_course_ids:
-            if enrolled_course in id_idx_dict and unselect_course in id_idx_dict:
-                idx1 = id_idx_dict[enrolled_course]
-                idx2 = id_idx_dict[unselect_course]
-                sim = sim_matrix[idx1][idx2]
-                if unselect_course not in res:
-                    res[unselect_course] = sim
-                else:
-                    if sim >= res[unselect_course]:
-                        res[unselect_course] = sim
-    res = {k: v for k, v in sorted(res.items(), key=lambda item: item[1], reverse=True)}
-    return res
+	all_courses = set(idx_id_dict.values())
+	unselected_course_ids = all_courses.difference(enrolled_course_ids)
+	# Create a dictionary to store your recommendation results
+	res = {}
+	# First find all enrolled courses for user
+	for enrolled_course in enrolled_course_ids:
+		for unselect_course in unselected_course_ids:
+          		if enrolled_course in id_idx_dict and unselect_course in id_idx_dict:
+          			idx1 = id_idx_dict[enrolled_course]
+          			idx2 = id_idx_dict[unselect_course]
+          			sim = sim_matrix[idx1][idx2]
+          			if unselect_course not in res:
+          				res[unselect_course] = sim
+          			else:
+          				if sim >= res[unselect_course]:
+                    				res[unselect_course] = sim
+	res = {k: v for k, v in sorted(res.items(), key=lambda item: item[1], reverse=True)}
+	return res
 
 
 
 def profile_generate_recommendation_scores(user_id,unknown_courses,user_profile_df,course_genres_df):
-    """
-    Generate recommendation scores for users and courses.
+	"""
+	Generate recommendation scores for users and courses.
+ 
+	Returns:
+	users (list): List of user IDs.
+	courses (list): List of recommended course IDs.
+	scores (list): List of recommendation scores.
+	"""
 
-    Returns:
-    users (list): List of user IDs.
-    courses (list): List of recommended course IDs.
-    scores (list): List of recommendation scores.
-    """
-
-    users = []      # List to store user IDs
-    courses = []    # List to store recommended course IDs
-    scores = []     # List to store recommendation scores
-
-    # Iterate over each user ID in the test_user_ids list
+	users = []      # List to store user IDs
+	courses = []    # List to store recommended course IDs
+	scores = []     # List to store recommendation scores
+	
+	# Iterate over each user ID in the test_user_ids list
     
-    # Get the user profile data for the current user
-    test_user_profile = user_profile_df[user_profile_df['user'] == user_id]
+	# Get the user profile data for the current user
+	test_user_profile = user_profile_df[user_profile_df['user'] == user_id]
 
-    # Get the user vector for the current user id (replace with your method to obtain the user vector)
-    test_user_vector = test_user_profile.iloc[0, 1:].values
+	# Get the user vector for the current user id (replace with your method to obtain the user vector)
+	test_user_vector = test_user_profile.iloc[0, 1:].values
 
 
-    # Filter the course_genres_df to include only unknown courses
-    unknown_course_df = course_genres_df[course_genres_df['COURSE_ID'].isin(unknown_courses)]
-    unknown_course_ids = unknown_course_df['COURSE_ID'].values
+	# Filter the course_genres_df to include only unknown courses
+	unknown_course_df = course_genres_df[course_genres_df['COURSE_ID'].isin(unknown_courses)]
+	unknown_course_ids = unknown_course_df['COURSE_ID'].values
 
-    # Calculate the recommendation scores using dot product
-    recommendation_scores = np.dot(unknown_course_df.iloc[:, 2:].values, test_user_vector)
+	# Calculate the recommendation scores using dot product
+	recommendation_scores = np.dot(unknown_course_df.iloc[:, 2:].values, test_user_vector)
 
-    # Append the results into the users, courses, and scores list
-    for i in range(0, len(unknown_course_ids)):
-        score = recommendation_scores[i]
-        users.append(user_id)
-        courses.append(unknown_course_ids[i])
-        scores.append(recommendation_scores[i])
+	# Append the results into the users, courses, and scores list
+	for i in range(0, len(unknown_course_ids)):
+		score = recommendation_scores[i]
+		users.append(user_id)
+		courses.append(unknown_course_ids[i])
+		scores.append(recommendation_scores[i])
 
-    return users, courses, scores
+	return users, courses, scores
  
 def combine_cluster_labels(user_ids, labels):
-    # Convert labels to a DataFrame
-    labels_df = pd.DataFrame(labels)    
-    # Merge user_ids DataFrame with labels DataFrame based on index
-    cluster_df = pd.merge(user_ids, labels_df, left_index=True, right_index=True)
-    # Rename columns to 'user' and 'cluster'
-    cluster_df.columns = ['user', 'cluster']
-    return cluster_df
+	# Convert labels to a DataFrame
+	labels_df = pd.DataFrame(labels)    
+	# Merge user_ids DataFrame with labels DataFrame based on index
+	cluster_df = pd.merge(user_ids, labels_df, left_index=True, right_index=True)
+	# Rename columns to 'user' and 'cluster'
+	cluster_df.columns = ['user', 'cluster']
+	return cluster_df
 
 
 # Model training
