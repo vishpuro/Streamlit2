@@ -208,7 +208,7 @@ def predict(model_name, user_ids, params):
             res_dict['COURSE_ID'] = courses
             res_dict['SCORE'] = scores
             res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID', 'SCORE'])
-            res_df = res_df[res_df['SCORE']>=profile_sim_threshold]
+            res_df = res_df[res_df['SCORE']>=profile_sim_threshold].sort_values(by='SCORE',ascending=False)
         
         
         ######################################################### model 4 knn-surprise doesn't work#############################################            
