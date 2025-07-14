@@ -176,9 +176,9 @@ def predict(model_name, user_ids, params):
                               res = course_similarity_recommendations(idx_id_dict, id_idx_dict, enrolled_course_ids, sim_matrix)
                               for key, score in res.items():
                                         if score >= sim_threshold:
-                                        users.append(user_id)
-                                        courses.append(key)
-                                        scores.append(score)
+                                                  users.append(user_id)
+                                                  courses.append(key)
+                                                  scores.append(score)
                               
                               res_dict['USER'] = users
                               res_dict['COURSE_ID'] = courses
@@ -239,13 +239,13 @@ def predict(model_name, user_ids, params):
                               inertia=[]
                               silhouette=[]
                               for i in range(1,30,1):
-                              model=KMeans(n_clusters=i).fit(features)
-                              inertia.append(model.inertia_)
-                              labels=model.predict(features)
-                              if len(np.unique(labels))>=2:
-                                        silhouette.append(silhouette_score(features, labels=labels))
-                              else:
-                                        silhouette.append(np.nan)
+                                        model=KMeans(n_clusters=i).fit(features)
+                                        inertia.append(model.inertia_)
+                                        labels=model.predict(features)
+                                        if len(np.unique(labels))>=2:
+                                                  silhouette.append(silhouette_score(features, labels=labels))
+                                        else:
+                                                  silhouette.append(np.nan)
                       
                               n_clust=np.argmax(silhouette[3:])+1
                       
