@@ -138,9 +138,10 @@ elif model_selection == backend.models[1]:
     params['profile_sim_threshold'] = profile_sim_threshold
 # Clustering model
 elif model_selection == backend.models[2]:
-    cluster_no = st.sidebar.slider('Number of Clusters',
-                                   min_value=0, max_value=50,
-                                   value=20, step=1)
+    n_enrollments = st.sidebar.slider('Number of enrollments to count as a popular course',
+                                   min_value=10, max_value=200,
+                                   value=100, step=10)
+    params['n_enrollments'] = n_enrollments
 
 elif model_selection == backend.models[4]:
     k_max = st.sidebar.slider('Define the K in K-Nearest Neighbours',
