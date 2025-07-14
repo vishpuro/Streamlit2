@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-
 ####--- Surprise ---####
 #from surprise.dataset import DatasetAutoFolds
 #from surprise import KNNBasic
@@ -14,6 +13,12 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
+
+####--- Tensorflow ---####
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 
 models = ("Course Similarity",
