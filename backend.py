@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import streamlit as st
 
 ####--- Surprise ---####
 #from surprise.dataset import DatasetAutoFolds
@@ -137,7 +138,14 @@ def profile_generate_recommendation_scores(user_id,unknown_courses,user_profile_
 
     return users, courses, scores
  
-
+def combine_cluster_labels(user_ids, labels):
+    # Convert labels to a DataFrame
+    labels_df = pd.DataFrame(labels)    
+    # Merge user_ids DataFrame with labels DataFrame based on index
+    cluster_df = pd.merge(user_ids, labels_df, left_index=True, right_index=True)
+    # Rename columns to 'user' and 'cluster'
+    cluster_df.columns = ['user', 'cluster']
+    return cluster_df
 
 
 # Model training
@@ -221,143 +229,153 @@ def predict(model_name, user_ids, params):
                               res_df = res_df[res_df['SCORE']>=profile_sim_threshold].sort_values(by='SCORE',ascending=False)
                     ######################################################### model 2 Clustering ###########################################################
                     if model_name == models[2]:
-                              ratings_df = load_ratings()
-                              course_genres_df = load_course_genres()
-                              user_ratings = ratings_df[ratings_df['user'] == user_id]
-                              enrolled_course_ids = user_ratings['item'].to_list()
-                              all_courses = set(course_genres_df['COURSE_ID'].values)
-                              unknown_courses = all_courses.difference(enrolled_course_ids)
+                              with st.status("Starting Clustering model...")
+                                        ratings_df = load_ratings()
+                                        course_genres_df = load_course_genres()
+                                        user_ratings = ratings_df[ratings_df['user'] == user_id]
+                                        enrolled_course_ids = user_ratings['item'].to_list()
+                                        all_courses = set(course_genres_df['COURSE_ID'].values)
+                                        unknown_courses = all_courses.difference(enrolled_course_ids)
+                                        
+                                        add_items={}
+                                        add_items['user']=np.zeros(len(course_genres_df.COURSE_ID))+ratings_df.user.max()+1
+                                        add_items['item']=course_genres_df.COURSE_ID
+                                        add_items['rating']=np.zeros(len(course_genres_df.COURSE_ID))+4
+                                        
+                                        ratings_df=pd.concat([ratings_df,pd.DataFrame(add_items)])
+                                        ratings_ordered_df=ratings_df.pivot(index='user',columns='item',values='rating').fillna(0).loc[:,course_genres_df.COURSE_ID]
+                                        user_profile_df=pd.DataFrame(np.dot(ratings_ordered_df,course_genres_df.iloc[:,2:]),index=ratings_ordered_df.index,columns=course_genres_df.iloc[:,2:].columns)
+                                        user_profile_df.drop(ratings_df.user.max(),inplace=True)
+                                        user_profile_df.reset_index(inplace=True)
+                                        user_profile_df.to_csv("user_profiles.csv")
                               
-                              add_items={}
-                              add_items['user']=np.zeros(len(course_genres_df.COURSE_ID))+ratings_df.user.max()+1
-                              add_items['item']=course_genres_df.COURSE_ID
-                              add_items['rating']=np.zeros(len(course_genres_df.COURSE_ID))+4
+                                        st.write("Scaling Data...")
+                                        
+                                        scaler = StandardScaler()
+                                        # Standardizing the selected features (feature_names) in the user_profile_df DataFrame
+                                        features = scaler.fit_transform(user_profile_df.iloc[:,1:])
+
+                                        st.write("Fitting KMeans...")
+                                                                                
+                                        inertia=[]
+                                        silhouette=[]
+                                        for i in range(1,30,1):
+                                                  model=KMeans(n_clusters=i).fit(features)
+                                                  inertia.append(model.inertia_)
+                                                  labels=model.predict(features)
+                                                  if len(np.unique(labels))>=2:
+                                                            silhouette.append(silhouette_score(features, labels=labels))
+                                                  else:
+                                                            silhouette.append(np.nan)
+                                
+                                        n_clust=np.argmax(silhouette[3:])+1
+
+                                        st.write("Best number of clusters: ",n_clust)
+                                        st.write("Refitting...")
+                                
+                                        model=KMeans(n_clusters=n_clust).fit(features)
+                                        cluster_labels = model.labels_
+                                        cluster_orig=combine_cluster_labels(user_profile_df.user, cluster_labels)
+                                        test_users_labelled_orig = pd.merge(ratings_df, cluster_orig, left_on='user', right_on='user')
+                                        courses_cluster = test_users_labelled_orig[['item', 'cluster']]
+                                        courses_cluster['count'] = [1] * len(courses_cluster)
+                                        courses_cluster_grouped = courses_cluster.groupby(['cluster','item']).agg(enrollments=('count','sum')).reset_index()
+                                        user_labels=test_users_labelled_orig[['user','cluster']].groupby(by='user').mean()
+                                
+                                        ## - First get all courses belonging to the same cluster and figure out what are the popular ones (such as course enrollments beyond a threshold like 100)
+                                        cluster_courses=[courses_cluster_grouped[(courses_cluster_grouped['cluster']==i)&(courses_cluster_grouped['enrollments']>=n_erollments)].sort_values(by='enrollments',ascending=False)['item'].tolist() for i in range(courses_cluster_grouped['cluster'].max()+1)]
+                                        
+                                        st.write("Outputing")
                               
-                              ratings_df=pd.concat([ratings_df,pd.DataFrame(add_items)])
-                              ratings_ordered_df=ratings_df.pivot(index='user',columns='item',values='rating').fillna(0).loc[:,course_genres_df.COURSE_ID]
-                              user_profile_df=pd.DataFrame(np.dot(ratings_ordered_df,course_genres_df.iloc[:,2:]),index=ratings_ordered_df.index,columns=course_genres_df.iloc[:,2:].columns)
-                              user_profile_df.drop(ratings_df.user.max(),inplace=True)
-                              user_profile_df.reset_index(inplace=True)
-                              user_profile_df.to_csv("user_profiles.csv")
+                                        users = []
+                                        courses = []
+                                        for user in user_labels.index:
+                                                  cluster = int(user_labels.loc[user].tolist()[0])
+                                                  courses_in_cluster = cluster_courses[cluster]
+                                                  user_courses = test_users_labelled_orig[(test_users_labelled_orig['user']==user)]['item'].tolist()
+                                                  recommended_courses = list(set(courses_in_cluster)-set(user_courses))
+                    
+                                                  for rc in recommended_courses:
+                                                            users.append(user)
+                                                            courses.append(rc)
+                            
+                                        res_dict['USER'] = users
+                                        res_dict['COURSE_ID'] = courses
+                                        res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID'])
+                              ######################################################### model 3 Clustering ###########################################################
+                              if model_name == models[3]:
+                                        ratings_df = load_ratings()
+                                        course_genres_df = load_course_genres()
+                                        user_ratings = ratings_df[ratings_df['user'] == user_id]
+                                        enrolled_course_ids = user_ratings['item'].to_list()
+                                        all_courses = set(course_genres_df['COURSE_ID'].values)
+                                        unknown_courses = all_courses.difference(enrolled_course_ids)
+                                        
+                                        add_items={}
+                                        add_items['user']=np.zeros(len(course_genres_df.COURSE_ID))+ratings_df.user.max()+1
+                                        add_items['item']=course_genres_df.COURSE_ID
+                                        add_items['rating']=np.zeros(len(course_genres_df.COURSE_ID))+4
+                                        
+                                        ratings_df=pd.concat([ratings_df,pd.DataFrame(add_items)])
+                                        ratings_ordered_df=ratings_df.pivot(index='user',columns='item',values='rating').fillna(0).loc[:,course_genres_df.COURSE_ID]
+                                        user_profile_df=pd.DataFrame(np.dot(ratings_ordered_df,course_genres_df.iloc[:,2:]),index=ratings_ordered_df.index,columns=course_genres_df.iloc[:,2:].columns)
+                                        user_profile_df.drop(ratings_df.user.max(),inplace=True)
+                                        user_profile_df.reset_index(inplace=True)
+                                        user_profile_df.to_csv("user_profiles.csv")
+                                        
+                                        scaler = StandardScaler()
+                                        # Standardizing the selected features (feature_names) in the user_profile_df DataFrame
+                                        features = scaler.fit_transform(user_profile_df.iloc[:,1:])
                               
-                              scaler = StandardScaler()
-                              # Standardizing the selected features (feature_names) in the user_profile_df DataFrame
-                              features = scaler.fit_transform(user_profile_df.iloc[:,1:])
-          
-                              inertia=[]
-                              silhouette=[]
-                              for i in range(1,30,1):
-                                        model=KMeans(n_clusters=i).fit(features)
-                                        inertia.append(model.inertia_)
-                                        labels=model.predict(features)
-                                        if len(np.unique(labels))>=2:
-                                                  silhouette.append(silhouette_score(features, labels=labels))
-                                        else:
-                                                  silhouette.append(np.nan)
-                      
-                              n_clust=np.argmax(silhouette[3:])+1
-                      
-                              model=KMeans(n_clusters=n_clust).fit(features)
-                              cluster_labels = model.labels_
-                              cluster_orig=combine_cluster_labels(user_profile_df.user, cluster_labels)
-                              test_users_labelled_orig = pd.merge(ratings_df, cluster_orig, left_on='user', right_on='user')
-                              courses_cluster = test_users_labelled_orig[['item', 'cluster']]
-                              courses_cluster['count'] = [1] * len(courses_cluster)
-                              courses_cluster_grouped = courses_cluster.groupby(['cluster','item']).agg(enrollments=('count','sum')).reset_index()
-                              user_labels=test_users_labelled_orig[['user','cluster']].groupby(by='user').mean()
-                      
-                              ## - First get all courses belonging to the same cluster and figure out what are the popular ones (such as course enrollments beyond a threshold like 100)
-                              cluster_courses=[courses_cluster_grouped[(courses_cluster_grouped['cluster']==i)&(courses_cluster_grouped['enrollments']>=n_erollments)].sort_values(by='enrollments',ascending=False)['item'].tolist() for i in range(courses_cluster_grouped['cluster'].max()+1)]
-          
-                              users = []
-                              courses = []
-                              for user in user_labels.index:
-                                        cluster = int(user_labels.loc[user].tolist()[0])
-                                        courses_in_cluster = cluster_courses[cluster]
-                                        user_courses = test_users_labelled_orig[(test_users_labelled_orig['user']==user)]['item'].tolist()
-                                        recommended_courses = list(set(courses_in_cluster)-set(user_courses))
-          
+                                        pca_model=PCA(n_components=14)
+                                        pca_model.fit(features)
+                                        evr=pca_model.explained_variance_ratio_
+                                        evr_cumsum=np.cumsum(evr)
+                                        n_components=sum(evr_cumsum<0.9)+1
+                              
+                                        pca_model=PCA(n_components=n_components)
+                                        pca_df=pd.DataFrame(pca_model.fit_transform(features),columns=['PC'+str(i) for i in range(n_components)])
+                              
+                                        inertia=[]
+                                        silhouette=[]
+                                        for i in range(1,30,1):
+                                                  model=KMeans(n_clusters=i).fit(pca_df)
+                                                  inertia.append(model.inertia_)
+                                                  labels=model.predict(pca_df)
+                                                  if len(np.unique(labels))>=2:
+                                                            silhouette.append(silhouette_score(pca_df, labels=labels))
+                                                  else:
+                                                            silhouette.append(np.nan)
+                                
+                                        n_clust=np.argmax(silhouette[3:])+1
+                                
+                                        model=KMeans(n_clusters=n_clust).fit(pca_df)
+                                        cluster_labels = model.labels_
+                                        cluster_pca=combine_cluster_labels(user_profile_df.user, cluster_labels)
+                                        test_users_labelled_pca = pd.merge(ratings_df, cluster_pca, left_on='user', right_on='user')
+                                        courses_cluster = test_users_labelled_pca[['item', 'cluster']]
+                                        courses_cluster['count'] = [1] * len(courses_cluster)
+                                        courses_cluster_grouped = courses_cluster.groupby(['cluster','item']).agg(enrollments=('count','sum')).reset_index()
+                                        user_labels=test_users_labelled_pca[['user','cluster']].groupby(by='user').mean()
+                              
+                                        ## - First get all courses belonging to the same cluster and figure out what are the popular ones (such as course enrollments beyond a threshold like 100)
+                                        cluster_courses=[courses_cluster_grouped[(courses_cluster_grouped['cluster']==i)&(courses_cluster_grouped['enrollments']>=n_erollments)].sort_values(by='enrollments',ascending=False)['item'].tolist() for i in range(courses_cluster_grouped['cluster'].max()+1)]
+                                    
+                                        users = []
+                                        courses = []
+                                        for user in user_labels.index:
+                                                  cluster = int(user_labels.loc[user].tolist()[0])
+                                                  courses_in_cluster = cluster_courses[cluster]
+                                                  user_courses = test_users_labelled_orig[(test_users_labelled_orig['user']==user)]['item'].tolist()
+                                                  recommended_courses = list(set(courses_in_cluster)-set(user_courses))
+                    
                                         for rc in recommended_courses:
                                                   users.append(user)
                                                   courses.append(rc)
-                  
-                              res_dict['USER'] = users
-                              res_dict['COURSE_ID'] = courses
-                              res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID'])
-                    ######################################################### model 3 Clustering ###########################################################
-                    if model_name == models[3]:
-                              ratings_df = load_ratings()
-                              course_genres_df = load_course_genres()
-                              user_ratings = ratings_df[ratings_df['user'] == user_id]
-                              enrolled_course_ids = user_ratings['item'].to_list()
-                              all_courses = set(course_genres_df['COURSE_ID'].values)
-                              unknown_courses = all_courses.difference(enrolled_course_ids)
-                              
-                              add_items={}
-                              add_items['user']=np.zeros(len(course_genres_df.COURSE_ID))+ratings_df.user.max()+1
-                              add_items['item']=course_genres_df.COURSE_ID
-                              add_items['rating']=np.zeros(len(course_genres_df.COURSE_ID))+4
-                              
-                              ratings_df=pd.concat([ratings_df,pd.DataFrame(add_items)])
-                              ratings_ordered_df=ratings_df.pivot(index='user',columns='item',values='rating').fillna(0).loc[:,course_genres_df.COURSE_ID]
-                              user_profile_df=pd.DataFrame(np.dot(ratings_ordered_df,course_genres_df.iloc[:,2:]),index=ratings_ordered_df.index,columns=course_genres_df.iloc[:,2:].columns)
-                              user_profile_df.drop(ratings_df.user.max(),inplace=True)
-                              user_profile_df.reset_index(inplace=True)
-                              user_profile_df.to_csv("user_profiles.csv")
-                              
-                              scaler = StandardScaler()
-                              # Standardizing the selected features (feature_names) in the user_profile_df DataFrame
-                              features = scaler.fit_transform(user_profile_df.iloc[:,1:])
-                    
-                              pca_model=PCA(n_components=14)
-                              pca_model.fit(features)
-                              evr=pca_model.explained_variance_ratio_
-                              evr_cumsum=np.cumsum(evr)
-                              n_components=sum(evr_cumsum<0.9)+1
-                    
-                              pca_model=PCA(n_components=n_components)
-                              pca_df=pd.DataFrame(pca_model.fit_transform(features),columns=['PC'+str(i) for i in range(n_components)])
-                    
-                              inertia=[]
-                              silhouette=[]
-                              for i in range(1,30,1):
-                                        model=KMeans(n_clusters=i).fit(pca_df)
-                                        inertia.append(model.inertia_)
-                                        labels=model.predict(pca_df)
-                                        if len(np.unique(labels))>=2:
-                                                  silhouette.append(silhouette_score(pca_df, labels=labels))
-                                        else:
-                                                  silhouette.append(np.nan)
-                      
-                              n_clust=np.argmax(silhouette[3:])+1
-                      
-                              model=KMeans(n_clusters=n_clust).fit(pca_df)
-                              cluster_labels = model.labels_
-                              cluster_pca=combine_cluster_labels(user_profile_df.user, cluster_labels)
-                              test_users_labelled_pca = pd.merge(ratings_df, cluster_pca, left_on='user', right_on='user')
-                              courses_cluster = test_users_labelled_pca[['item', 'cluster']]
-                              courses_cluster['count'] = [1] * len(courses_cluster)
-                              courses_cluster_grouped = courses_cluster.groupby(['cluster','item']).agg(enrollments=('count','sum')).reset_index()
-                              user_labels=test_users_labelled_pca[['user','cluster']].groupby(by='user').mean()
-                    
-                              ## - First get all courses belonging to the same cluster and figure out what are the popular ones (such as course enrollments beyond a threshold like 100)
-                              cluster_courses=[courses_cluster_grouped[(courses_cluster_grouped['cluster']==i)&(courses_cluster_grouped['enrollments']>=n_erollments)].sort_values(by='enrollments',ascending=False)['item'].tolist() for i in range(courses_cluster_grouped['cluster'].max()+1)]
-                          
-                              users = []
-                              courses = []
-                              for user in user_labels.index:
-                                        cluster = int(user_labels.loc[user].tolist()[0])
-                                        courses_in_cluster = cluster_courses[cluster]
-                                        user_courses = test_users_labelled_orig[(test_users_labelled_orig['user']==user)]['item'].tolist()
-                                        recommended_courses = list(set(courses_in_cluster)-set(user_courses))
-          
-                              for rc in recommended_courses:
-                                        users.append(user)
-                                        courses.append(rc)
-                  
-                              res_dict['USER'] = users
-                              res_dict['COURSE_ID'] = courses
-                              res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID'])
+                            
+                                        res_dict['USER'] = users
+                                        res_dict['COURSE_ID'] = courses
+                                        res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID'])
                   ######################################################### model 4 knn-surprise doesn't work#############################################            
           #        if model_name==models[4]:
           #            reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
