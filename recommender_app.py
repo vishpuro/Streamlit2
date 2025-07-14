@@ -15,9 +15,9 @@ from st_aggrid import GridUpdateMode, DataReturnMode
 
 # Basic webpage setup
 st.set_page_config(
-   page_title="Course Recommender System",
-   layout="wide",
-   initial_sidebar_state="expanded",
+	page_title="Course Recommender System",
+	layout="wide",
+	initial_sidebar_state="expanded",
 )
 
 
@@ -25,7 +25,7 @@ st.set_page_config(
 # Load datasets
 @st.cache_data
 def load_ratings():
-   return backend.load_ratings()
+	return backend.load_ratings()
 
 
 @st.cache_data
