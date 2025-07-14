@@ -177,5 +177,5 @@ if pred_button and selected_courses_df.shape[0] > 0:
     res_df = res_df[['COURSE_ID', 'SCORE']]
     course_df = load_courses()
     res_df = pd.merge(res_df, course_df, on=["COURSE_ID"]).drop('COURSE_ID', axis=1)
-    st.table(res_df)
+    st.dataframe(res_df)
 
