@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
-from surprise.dataset import DatasetAutoFolds
-from surprise import KNNBasic
-from surprise import Dataset, Reader
-from surprise.model_selection import train_test_split
+#from surprise.dataset import DatasetAutoFolds
+#from surprise import KNNBasic
+#from surprise import Dataset, Reader
+#from surprise.model_selection import train_test_split
 
 
 models = ("Course Similarity",
