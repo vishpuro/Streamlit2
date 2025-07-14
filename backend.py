@@ -346,10 +346,10 @@ def predict(model_name, user_ids, params):
                               users = []
                               courses = []
                               for user in user_labels.index:
-                              cluster = int(user_labels.loc[user].tolist()[0])
-                              courses_in_cluster = cluster_courses[cluster]
-                              user_courses = test_users_labelled_orig[(test_users_labelled_orig['user']==user)]['item'].tolist()
-                              recommended_courses = list(set(courses_in_cluster)-set(user_courses))
+                                        cluster = int(user_labels.loc[user].tolist()[0])
+                                        courses_in_cluster = cluster_courses[cluster]
+                                        user_courses = test_users_labelled_orig[(test_users_labelled_orig['user']==user)]['item'].tolist()
+                                        recommended_courses = list(set(courses_in_cluster)-set(user_courses))
           
                               for rc in recommended_courses:
                                         users.append(user)
