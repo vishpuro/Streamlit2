@@ -170,7 +170,7 @@ if pred_button and selected_courses_df.shape[0] > 0:
     # Start training process
     new_id = backend.add_new_ratings(selected_courses_df['COURSE_ID'].values)
     
-    train(model_selection, params) 
+    #train(model_selection, params) 
     
     user_ids = [new_id]
     res_df = predict(model_selection, user_ids, params)
