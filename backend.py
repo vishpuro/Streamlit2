@@ -230,7 +230,7 @@ def predict(model_name, user_ids, params):
                               res_df = res_df[res_df['SCORE']>=profile_sim_threshold].sort_values(by='SCORE',ascending=False)
                     ######################################################### model 2 Clustering ###########################################################
                     if model_name == models[2]:
-                              with st.status("Starting Clustering model...")
+                              with st.status("Starting Clustering model..."):
                                         ratings_df = load_ratings()
                                         course_genres_df = load_course_genres()
                                         user_ratings = ratings_df[ratings_df['user'] == user_id]
