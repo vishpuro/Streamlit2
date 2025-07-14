@@ -285,7 +285,7 @@ def predict(model_name, user_ids, params):
                               res_dict['COURSE_ID'] = courses
                               res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID'])
                     ######################################################### model 3 Clustering ###########################################################
-                    if model_name == models[2]:
+                    if model_name == models[3]:
                               ratings_df = load_ratings()
                               course_genres_df = load_course_genres()
                               user_ratings = ratings_df[ratings_df['user'] == user_id]
