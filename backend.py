@@ -603,7 +603,7 @@ def predict(model_name, user_ids, params):
 				res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID'])
 				res_df=res_df[res_df['USER']==user_id]
 				
-		######################################################### model 4 knn-surprise doesn't work#############################################            
+		######################################################### model 4 knn-surprise #############################################            
 		if model_name==models[4]:
 			with st.status("Starting KNN model...", expanded=True):
 				reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
@@ -615,8 +615,6 @@ def predict(model_name, user_ids, params):
 				st.write("Fitting KNN...")
 				
 				model.fit(trainset)
-
-				st.write("Finished fitting...")
 				
 				ratings_df = load_ratings()
 				course_genres_df = load_course_genres()
@@ -624,17 +622,13 @@ def predict(model_name, user_ids, params):
 				enrolled_course_ids = user_ratings['item'].to_list()
 				all_courses = set(course_genres_df['COURSE_ID'].values)
 				unknown_courses = list(all_courses.difference(enrolled_course_ids))
-
-				st.write("Creating test sets...")
 				
-				#test_data=ratings_df[ratings_df['item'].isin(unselected_course_ids)]
 				test_data={}
 				test_data['user']=[2]*len(unknown_courses)
 				test_data['item']=unknown_courses
 				test_data['rating']=[4]*len(unknown_courses)
 				test_data=pd.DataFrame(test_data)
 
-				time.sleep(5)
 				st.write("Predicting Courses...")
 				
 				for i in range(test_data.shape[0]):
@@ -658,7 +652,7 @@ def predict(model_name, user_ids, params):
 				user_ratings = ratings_df[ratings_df['user'] == user_id]
 				enrolled_course_ids = user_ratings['item'].to_list()
 				all_courses = set(course_genres_df['COURSE_ID'].values)
-				unknown_courses = all_courses.difference(enrolled_course_ids)
+				unknown_courses = list(all_courses.difference(enrolled_course_ids))
 				test_dataset= pd.DataFrame({'user':[user_id]*len(unknown_courses),'item':unknown_courses,'rating':[4]*len(unknown_courses)})
 				
 				st.write("Encoding data...")
