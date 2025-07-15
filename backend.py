@@ -344,7 +344,7 @@ def train(model_name, params):
 	if model_name==models[4]:
 		reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
 		course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
-		trainset=surprise.dataset.DatasetAutoFolds.build_full_trainset(course_dataset)
+		trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
 		model=KNNBasic()
 		model.fit(trainset)
 
@@ -602,6 +602,7 @@ def predict(model_name, user_ids, params):
 			trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
 			model=KNNBasic(k=k_max)
 			model.fit(trainset)
+			
 			ratings_df = load_ratings()
 			user_ratings = ratings_df[ratings_df['user'] == user_id]
 			enrolled_course_ids = user_ratings['item'].to_list()
