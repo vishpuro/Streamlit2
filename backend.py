@@ -654,7 +654,7 @@ def predict(model_name, user_ids, params):
 				st.write("Encoding data...")
 				
 				encoded_data, user_idx2id_dict, course_idx2id_dict = process_dataset(ratings_df)
-				encoded_user_id=list(user_idx2id_dict.keys())[list(user_idx2id_dict.values()).index(user_id)]]
+				encoded_user_id=list(user_idx2id_dict.keys())[list(user_idx2id_dict.values()).index(user_id)]
 				encoded_unknown_courses=[]
 				for i in unknown_courses:
 					encoded_unknown_courses.append(list(course_idx2id_dict.keys())[list(course_idx2id_dict.values()).index(i)])	
