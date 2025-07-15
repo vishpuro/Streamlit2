@@ -2,4 +2,7 @@ numpy
 pandas
 streamlit
 streamlit-aggrid
+scipy
 scikit-learn
+tensorflow
+surprise
