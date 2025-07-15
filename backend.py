@@ -1,7 +1,7 @@
 import streamlit as st
 
 ####--- Surprise ---####
-import surprise
+from surprise.dataset import DatasetAutoFolds
 from surprise import KNNBasic
 from surprise import Dataset, Reader
 from surprise.model_selection import train_test_split
@@ -599,7 +599,7 @@ def predict(model_name, user_ids, params):
 		if model_name==models[4]:
 			reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
 			course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
-			trainset=surprise.dataset.DatasetAutoFolds.build_full_trainset(course_dataset)
+			trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
 			model=KNNBasic(k=k_max)
 			model.fit(trainset)
 			ratings_df = load_ratings()
@@ -614,8 +614,8 @@ def predict(model_name, user_ids, params):
 				users.append(int(result.user))
 				courses.append(result.item)
 				scores.append(float(result.est))
-		######################################################### model 4 knn-surprise doesn't work#############################################            
-		if model_name==models[5]:
+		######################################################### model 6 Neural Network#############################################            
+		if model_name==models[6]:
 			with st.status("Starting Neural Network model...", expanded=True):
 				ratings_df = load_ratings()
 				course_genres_df = load_course_genres()
