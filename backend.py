@@ -654,14 +654,12 @@ def predict(model_name, user_ids, params):
 				st.write("Encoding data...")
 				
 				encoded_data, user_idx2id_dict, course_idx2id_dict = process_dataset(ratings_df)
-				encoded_data_test, user_idx2id_dict_test, course_idx2id_dict_test = process_dataset(test_dataset)
-				x_train, x_val, x_test, y_train, y_val, y_test = generate_train_test_datasets(encoded_data)
-
-				st.write(user_id)
-				st.write(list(user_idx2id_dict_test.keys()))
-				st.write(list(user_idx2id_dict_test.keys())[list(user_idx2id_dict_test.values()).index(user_id)])
-
-				encoded_user_id=list(user_idx2id_dict_test.keys())[list(user_idx2id_dict_test.values()).index(user_id)]
+				
+				encoded_user_id=list(user_idx2id_dict.keys())[list(user_idx2id_dict.values()).index(user_id)]
+				#encoded_data_test, user_idx2id_dict_test, course_idx2id_dict_test = process_dataset(test_dataset)
+				encoded_data_test = encoded_data.loc[:,user=encoded_user_id]
+				
+				x_train, x_val, x_test, y_train, y_val, y_test = generate_train_test_datasets(encoded_data)		
 				
 				num_users = len(ratings_df['user'].unique())
 				num_items = len(ratings_df['item'].unique())
@@ -681,9 +679,8 @@ def predict(model_name, user_ids, params):
 				
 				st.write("Predicting results...")
 				
-				encoded_user_id=list(user_idx2id_dict_test.keys())[list(user_idx2id_dict_test.values()).index(user_id)]
-				test_data=encoded_data_test[encoded_data_test['user']==encoded_user_id][['user','item']].to_numpy()
-				#st.write(test_data)
+				
+				test_data=encoded_data_test[['user','item']].to_numpy()
 				
 				pred=model.predict(test_data)
 				pred=(pred*2)+3
