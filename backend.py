@@ -371,7 +371,6 @@ def predict(model_name, user_ids, params):
 			user_based=True
 		else:
 			user_based=False
-		user_based = params["user_based"]
 	if "profile_sim_threshold" in params:
 		profile_sim_threshold = params["profile_sim_threshold"]
 	if "n_erollments" in params:
