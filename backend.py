@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 
 ####--- Surprise ---####
-from surprise.dataset import DatasetAutoFolds
 from surprise import KNNBasic
 from surprise import Dataset, Reader
 from surprise.model_selection import train_test_split
@@ -343,7 +342,7 @@ def train(model_name, params):
 	if model_name==models[4]:
 		reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
 		course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
-		trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
+		trainset=surprise.dataset.DatasetAutoFolds.build_full_trainset(course_dataset)
 		model=KNNBasic()
 		model.fit(trainset)
 
