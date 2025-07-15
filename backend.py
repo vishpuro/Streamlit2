@@ -363,7 +363,7 @@ def predict(model_name, user_ids, params):
 	if "sim_threshold" in params:
 		sim_threshold = params["sim_threshold"] / 100.0
 	if "k_max" in params:
-		k=params["k_max"]
+		k_max=params["k_max"]
 	if "similarity_measure" in params:
 		similarity_measure = params["similarity_measure"]
 	if "user_based" in params:
@@ -377,8 +377,12 @@ def predict(model_name, user_ids, params):
 		n_erollments = params["n_erollments"]
 	if "embedding_size" in params:
 		embedding_size = params["embedding_size"]
+	if "n_factors" in params:
+		n_factors=params["n_factors"]
+		
 	idx_id_dict, id_idx_dict = get_doc_dicts()
 	sim_matrix = load_course_sims().to_numpy()
+	
 	users = []
 	courses = []
 	scores = []
@@ -613,6 +617,43 @@ def predict(model_name, user_ids, params):
 				model=KNNBasic(k=k_max,sim_option={"name":similarity_measure,"user_based":user_based})
 
 				st.write("Fitting KNN...")
+				
+				model.fit(trainset)
+				
+				ratings_df = load_ratings()
+				course_genres_df = load_course_genres()
+				user_ratings = ratings_df[ratings_df['user'] == user_id]
+				enrolled_course_ids = user_ratings['item'].to_list()
+				all_courses = set(course_genres_df['COURSE_ID'].values)
+				unknown_courses = list(all_courses.difference(enrolled_course_ids))
+				
+				test_data= pd.DataFrame({'user':[user_id]*len(unknown_courses),'item':unknown_courses,'rating':[4]*len(unknown_courses)})
+
+				st.write("Predicting Courses...")
+				
+				for i in range(test_data.shape[0]):
+					result=model.predict(uid=test_data.loc[i,'user'],iid=test_data.loc[i,'item'],r_ui=test_data.loc[i,'rating'])
+					users.append(int(result.uid))
+					courses.append(result.iid)
+					scores.append(float(result.est))
+
+				st.write("Outputting...")
+				
+				res_dict['USER'] = users
+				res_dict['COURSE_ID'] = courses
+				res_dict['SCORE'] = scores
+				res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID', 'SCORE'])
+				res_df.sort_values(by='SCORE',ascending=False,inplace=True)
+		######################################################### model 5 NMF-surprise #############################################            
+		if model_name==models[5]:
+			with st.status("Starting NMF model...", expanded=True):
+				reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
+				course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
+				#trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
+				trainset, testset = train_test_split(course_dataset, test_size=.95)
+				model=NMF(n_factors=n_factors,random_state=123,n_epochs=100)
+
+				st.write("Fitting NMF...")
 				
 				model.fit(trainset)
 				
