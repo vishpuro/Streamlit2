@@ -367,6 +367,10 @@ def predict(model_name, user_ids, params):
 	if "similarity_measure" in params:
 		similarity_measure = params["similarity_measure"]
 	if "user_based" in params:
+		if params["user_based"]=='True:
+			user_based=True
+		else:
+			user_based=False
 		user_based = params["user_based"]
 	if "profile_sim_threshold" in params:
 		profile_sim_threshold = params["profile_sim_threshold"]
