@@ -1,6 +1,4 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
 
 ####--- Surprise ---####
 import surprise
@@ -19,6 +17,9 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from keras.callbacks import EarlyStopping, ModelCheckpoint
+
+import pandas as pd
+import numpy as np
 
 
 models = ("Course Similarity",
