@@ -663,7 +663,8 @@ def predict(model_name, user_ids, params):
 						course_idx2id_dict[list(course_idx2id_dict.keys())[-1]+1]=i
 						encoded_unknown_courses.append(list(course_idx2id_dict.keys())[list(course_idx2id_dict.values()).index(i)])
 						
-				encoded_test_dataset= pd.DataFrame({'user':[encoded_user_id]*len(encoded_unknown_courses),'item':encoded_unknown_courses,'rating':[4]*len(encoded_unknown_courses)})			
+				encoded_test_dataset= pd.DataFrame({'user':[encoded_user_id]*len(encoded_unknown_courses),'item':encoded_unknown_courses,'rating':[4]*len(encoded_unknown_courses)})
+				st.write(encoded_test_dataset.head())
 				
 				x_train, x_val, x_test, y_train, y_val, y_test = generate_train_test_datasets(encoded_data)		
 				
@@ -685,8 +686,8 @@ def predict(model_name, user_ids, params):
 				
 				st.write("Predicting results...")
 				
-				
-				pred=model.predict(encoded_test_dataset[['user','item']].to_numpy())
+				test_data=encoded_test_dataset[['user','item']].to_numpy()
+				pred=model.predict(test_data)
 				pred=(pred*2)+3
 				test_dataset.loc[:,'rating']=pred
 				res_df=test_dataset
