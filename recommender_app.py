@@ -140,12 +140,12 @@ elif model_selection == backend.models[4]:
 	params['k_max'] = k_max
 	
 	options1 = ["cosine", "pearson", "msd"]
-	selection1 = st.segmented_control("Similarity Measure", options1, selection_mode="single")
+	selection1 = st.segmented_control("Similarity Measure", options1, selection_mode="single",default="cosine")
 	st.markdown(f"Your selected option: {selection1}.")
 	params['similarity_measure'] = selection1
 
 	options2 = ["True", "False"]
-	selection2 = st.segmented_control("User Based?", options2, selection_mode="single")
+	selection2 = st.segmented_control("User Based?", options2, selection_mode="single",default="False")
 	st.markdown(f"Your selected option: {selection2}.")
 	params['user_based'] = selection2
 
