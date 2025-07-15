@@ -139,7 +139,7 @@ elif model_selection == backend.models[4]:
 	k_max = st.sidebar.slider('Define the K in K-Nearest Neighbours',min_value=10, max_value=100,value=40, step=10)
 	params['k_max'] = k_max
 
-elif model_selection == backend.models[5]:
+elif model_selection == backend.models[6]:
 	embedding_size = st.sidebar.slider('Embedding size',min_value=16, max_value=128,value=32, step=8)
 	params['embedding_size'] = embedding_size
 
