@@ -654,10 +654,11 @@ def predict(model_name, user_ids, params):
 				st.write("Encoding data...")
 				
 				encoded_data, user_idx2id_dict, course_idx2id_dict = process_dataset(ratings_df)
-				
-				encoded_user_id=list(user_idx2id_dict.keys())[list(user_idx2id_dict.values()).index(user_id)]
-				#encoded_data_test, user_idx2id_dict_test, course_idx2id_dict_test = process_dataset(test_dataset)
-				encoded_data_test = encoded_data.loc[:,user=encoded_user_id]
+				encoded_user_id=list(user_idx2id_dict.keys())[list(user_idx2id_dict.values()).index(user_id)]]
+				encoded_unknown_courses=[]
+				for i in unknown_courses:
+					encoded_unknown_courses.append(list(course_idx2id_dict.keys())[list(course_idx2id_dict.values()).index(i)])	
+				encoded_test_dataset= pd.DataFrame({'user':[encoded_user_id]*len(encoded_unknown_courses),'item':encoded_unknown_courses,'rating':[4]*len(encoded_unknown_courses)})			
 				
 				x_train, x_val, x_test, y_train, y_val, y_test = generate_train_test_datasets(encoded_data)		
 				
