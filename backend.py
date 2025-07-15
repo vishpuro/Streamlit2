@@ -601,7 +601,8 @@ def predict(model_name, user_ids, params):
 			with st.status("Starting KNN model...", expanded=True):
 				reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
 				course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
-				trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
+				#trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
+				trainset, testset = train_test_split(course_dataset, test_size=.9)
 				model=KNNBasic(k=k_max)
 
 				st.write("Fitting KNN...")
