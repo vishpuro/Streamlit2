@@ -665,7 +665,7 @@ def predict(model_name, user_ids, params):
 						
 				encoded_test_dataset= pd.DataFrame({'user':[encoded_user_id]*len(encoded_unknown_courses),'item':encoded_unknown_courses,'rating':[4]*len(encoded_unknown_courses)})
 				st.write(encoded_test_dataset.head())
-				
+				st.write(encoded_test_dataset[['user','item']].to_numpy()[0:5])
 				x_train, x_val, x_test, y_train, y_val, y_test = generate_train_test_datasets(encoded_data)		
 				
 				num_users = len(ratings_df['user'].unique())
