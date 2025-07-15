@@ -149,6 +149,10 @@ elif model_selection == backend.models[4]:
 	st.sidebar.markdown(f"Your selected option: {selection2}.")
 	params['user_based'] = selection2
 
+elif model_selection == backend.models[5]:
+	n_factors = st.sidebar.slider('Number of latent factors',min_value=10, max_value=200,value=10, step=10)
+	params['n_factors'] = n_factors
+
 elif model_selection == backend.models[6]:
 	embedding_size = st.sidebar.slider('Embedding size',min_value=16, max_value=128,value=32, step=8)
 	params['embedding_size'] = embedding_size
