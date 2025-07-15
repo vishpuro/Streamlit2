@@ -631,7 +631,7 @@ def predict(model_name, user_ids, params):
 				st.write("Predicting Courses...")
 				
 				for i in range(test_data.shape[0]):
-					result=model.predict(uid=test_data.loc[i,'user'],iid=test_data.loc[i,'item'],rui=test_data.loc[i,'rating'])
+					result=model.predict(uid=test_data.loc[i,'user'],iid=test_data.loc[i,'item'],r_ui=test_data.loc[i,'rating'])
 					users.append(int(result.uid))
 					courses.append(result.iid)
 					scores.append(float(result.est))
