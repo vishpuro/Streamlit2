@@ -3,7 +3,7 @@ import streamlit as st
 
 ####--- Surprise ---####
 from surprise.dataset import DatasetAutoFolds
-from surprise import KNNBasic
+from surprise import KNNBasic, NMF
 from surprise import Dataset, Reader
 from surprise.model_selection import train_test_split
 
