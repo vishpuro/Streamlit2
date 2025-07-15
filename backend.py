@@ -675,7 +675,9 @@ def predict(model_name, user_ids, params):
 				
 				st.write("Predicting results...")
 				
-				pred=model.predict(encoded_data_test[encoded_data_test['user']==user_id][['user','item']].to_numpy())
+				test_data=encoded_data_test[encoded_data_test['user']==user_id][['user','item']].to_numpy()
+				
+				pred=model.predict(test_data)
 				pred=(pred*2)+3
 				test_dataset.loc[:,'rating']=pred
 				res_df=test_dataset
