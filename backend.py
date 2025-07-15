@@ -607,6 +607,8 @@ def predict(model_name, user_ids, params):
 				st.write("Fitting KNN...")
 				
 				model.fit(trainset)
+
+				st.write("Finished fitting...")
 				
 				ratings_df = load_ratings()
 				course_genres_df = load_course_genres()
