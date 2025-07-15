@@ -597,33 +597,42 @@ def predict(model_name, user_ids, params):
 				
 		######################################################### model 4 knn-surprise doesn't work#############################################            
 		if model_name==models[4]:
-			reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
-			course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
-			trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
-			model=KNNBasic(k=k_max)
-			model.fit(trainset)
-			
-			ratings_df = load_ratings()
-			course_genres_df = load_course_genres()
-			user_ratings = ratings_df[ratings_df['user'] == user_id]
-			enrolled_course_ids = user_ratings['item'].to_list()
-			all_courses = set(course_genres_df['COURSE_ID'].values)
-			unknown_courses = all_courses.difference(enrolled_course_ids)
-			#test_data=ratings_df[ratings_df['item'].isin(unselected_course_ids)]
-			test_data={}
-			test_data['user']=[2]*len(unknown_courses)
-			test_data['item']=unknown_courses
-			test_data['rating']=[4]*len(unknown_courses)
-			
-			for i in range(test_data.shape[0]):
-				result=model.predict(uid=test_data.loc[i,'user'],iid=test_data.loc[i,'item'],rui=test_data.loc[i,'rating'])
-				users.append(int(result.uid))
-				courses.append(result.iid)
-				scores.append(float(result.est))
-			res_dict['USER'] = users
-			res_dict['COURSE_ID'] = courses
-			res_dict['SCORE'] = scores
-			res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID', 'SCORE'])
+			with st.status("Starting KNN model...", expanded=True):
+				reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
+				course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
+				trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
+				model=KNNBasic(k=k_max)
+
+				st.write("Fitting KNN...")
+				
+				model.fit(trainset)
+				
+				ratings_df = load_ratings()
+				course_genres_df = load_course_genres()
+				user_ratings = ratings_df[ratings_df['user'] == user_id]
+				enrolled_course_ids = user_ratings['item'].to_list()
+				all_courses = set(course_genres_df['COURSE_ID'].values)
+				unknown_courses = all_courses.difference(enrolled_course_ids)
+				#test_data=ratings_df[ratings_df['item'].isin(unselected_course_ids)]
+				test_data={}
+				test_data['user']=[2]*len(unknown_courses)
+				test_data['item']=unknown_courses
+				test_data['rating']=[4]*len(unknown_courses)
+
+				st.write("Predicting Courses...")
+				
+				for i in range(test_data.shape[0]):
+					result=model.predict(uid=test_data.loc[i,'user'],iid=test_data.loc[i,'item'],rui=test_data.loc[i,'rating'])
+					users.append(int(result.uid))
+					courses.append(result.iid)
+					scores.append(float(result.est))
+
+				st.write("Outputting...")
+				
+				res_dict['USER'] = users
+				res_dict['COURSE_ID'] = courses
+				res_dict['SCORE'] = scores
+				res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID', 'SCORE'])
 		######################################################### model 6 Neural Network#############################################            
 		if model_name==models[6]:
 			with st.status("Starting Neural Network model...", expanded=True):
