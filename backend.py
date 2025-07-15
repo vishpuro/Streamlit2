@@ -168,7 +168,7 @@ class RecommenderNet(keras.Model):
 	- num_items (int): Number of items.
 	- embedding_size (int): Size of embedding vectors for users and items.
 	"""
-	def __init__(self, num_users, num_items, embedding_size=16, **kwargs):
+	def __init__(self, num_users, num_items, embedding_size, **kwargs):
 		"""
 		Constructor.
 		
