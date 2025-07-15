@@ -657,7 +657,7 @@ def predict(model_name, user_ids, params):
 				
 				st.write("Encoding data...")
 				
-				encoded_data, user_idx2id_dict, course_idx2id_dict = process_dataset(rating_df)
+				encoded_data, user_idx2id_dict, course_idx2id_dict = process_dataset(ratings_df)
 				encoded_data_test, user_idx2id_dict_test, course_idx2id_dict_test = process_dataset(test_dataset)
 				x_train, x_val, x_test, y_train, y_val, y_test = generate_train_test_datasets(encoded_data)
 				
