@@ -195,7 +195,7 @@ class RecommenderNet(keras.Model):
 			embeddings_regularizer=keras.regularizers.l2(1e-6),
 			)
 		self.user_dense_layer = layers.Dense(
-			units=32,
+			units=embedding_size,
 			activation='linear',
 			name='item_dense_layer',
 			kernel_initializer="he_normal",
@@ -219,7 +219,7 @@ class RecommenderNet(keras.Model):
 			embeddings_regularizer=keras.regularizers.l2(1e-6),
 			)
 		self.item_dense_layer = layers.Dense(
-			units=32,
+			units=embedding_size,
 			activation='linear',
 			name='item_dense_layer',
 			kernel_initializer="he_normal",
