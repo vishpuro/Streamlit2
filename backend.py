@@ -657,7 +657,12 @@ def predict(model_name, user_ids, params):
 				encoded_user_id=list(user_idx2id_dict.keys())[list(user_idx2id_dict.values()).index(user_id)]
 				encoded_unknown_courses=[]
 				for i in unknown_courses:
-					encoded_unknown_courses.append(list(course_idx2id_dict.keys())[list(course_idx2id_dict.values()).index(i)])	
+					if i in ratings_df.item.unique():
+						encoded_unknown_courses.append(list(course_idx2id_dict.keys())[list(course_idx2id_dict.values()).index(i)])
+					else:
+						course_idx2id_dict[list(course_idx2id_dict.keys())[-1]+1]=i
+						encoded_unknown_courses.append(list(course_idx2id_dict.keys())[list(course_idx2id_dict.values()).index(i)])
+						
 				encoded_test_dataset= pd.DataFrame({'user':[encoded_user_id]*len(encoded_unknown_courses),'item':encoded_unknown_courses,'rating':[4]*len(encoded_unknown_courses)})			
 				
 				x_train, x_val, x_test, y_train, y_val, y_test = generate_train_test_datasets(encoded_data)		
