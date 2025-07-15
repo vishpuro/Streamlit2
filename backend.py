@@ -675,8 +675,9 @@ def predict(model_name, user_ids, params):
 				
 				st.write("Predicting results...")
 				
-				test_data=encoded_data_test[encoded_data_test['user']==user_id][['user','item']].to_numpy()
-				st.write(test_data)
+				encoded_user_id=user_idx2id_test.keys()[user_idx2id_test.values().index(user_id)]
+				test_data=encoded_data_test[encoded_data_test['user']==encoded_user_id][['user','item']].to_numpy()
+				#st.write(test_data)
 				
 				pred=model.predict(test_data)
 				pred=(pred*2)+3
