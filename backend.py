@@ -642,6 +642,7 @@ def predict(model_name, user_ids, params):
 				res_dict['COURSE_ID'] = courses
 				res_dict['SCORE'] = scores
 				res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID', 'SCORE'])
+				res_df.sort_values(by='SCORE',ascending=False)
 		######################################################### model 6 Neural Network#############################################            
 		if model_name==models[6]:
 			with st.status("Starting Neural Network model...", expanded=True):
