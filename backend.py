@@ -610,7 +610,7 @@ def predict(model_name, user_ids, params):
 				course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
 				#trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
 				trainset, testset = train_test_split(course_dataset, test_size=.95)
-				model=KNNBasic(k=k_max,sim_option={"name":similarity_measure,"user_based":used_based})
+				model=KNNBasic(k=k_max,sim_option={"name":similarity_measure,"user_based":user_based})
 
 				st.write("Fitting KNN...")
 				
