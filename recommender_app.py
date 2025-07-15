@@ -138,6 +138,16 @@ elif (model_selection == backend.models[2])or(model_selection == backend.models[
 elif model_selection == backend.models[4]:
 	k_max = st.sidebar.slider('Define the K in K-Nearest Neighbours',min_value=10, max_value=100,value=40, step=10)
 	params['k_max'] = k_max
+	
+	options1 = ["cosine", "pearson", "msd"]
+	selection1 = st.segmented_control("Similarity Measure", options1, selection_mode="single")
+	st.markdown(f"Your selected option: {selection1}.")
+	params['similarity_measure'] = selection1
+
+	options2 = ["True", "False"]
+	selection2 = st.segmented_control("User Based?", options2, selection_mode="single")
+	st.markdown(f"Your selected option: {selection2}.")
+	params['user_based'] = selection2
 
 elif model_selection == backend.models[6]:
 	embedding_size = st.sidebar.slider('Embedding size',min_value=16, max_value=128,value=32, step=8)
