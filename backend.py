@@ -639,7 +639,7 @@ def predict(model_name, user_ids, params):
 				res_dict['COURSE_ID'] = courses
 				res_dict['SCORE'] = scores
 				res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID', 'SCORE'])
-				res_df.sort_values(by='SCORE',ascending=False)
+				res_df.sort_values(by='SCORE',ascending=False,inplace=True)
 		######################################################### model 6 Neural Network#############################################            
 		if model_name==models[6]:
 			with st.status("Starting Neural Network model...", expanded=True):
@@ -664,10 +664,8 @@ def predict(model_name, user_ids, params):
 						encoded_unknown_courses.append(list(course_idx2id_dict.keys())[list(course_idx2id_dict.values()).index(i)])
 						
 				encoded_test_dataset= pd.DataFrame({'user':[encoded_user_id]*len(encoded_unknown_courses),'item':encoded_unknown_courses,'rating':[4]*len(encoded_unknown_courses)})
-				st.write(encoded_test_dataset.head())
-				st.write(encoded_test_dataset[['user','item']].to_numpy()[0:5])
+				
 				x_train, x_val, x_test, y_train, y_val, y_test = generate_train_test_datasets(encoded_data)		
-				st.write(x_train[0:5])
 				
 				num_users = len(ratings_df['user'].unique())
 				num_items = len(course_idx2id_dict)
@@ -692,7 +690,7 @@ def predict(model_name, user_ids, params):
 				pred=(pred*2)+3
 				test_dataset.loc[:,'rating']=pred
 				res_df=test_dataset
-				res_df.sort_values(by='rating',ascending=False)
+				res_df.sort_values(by='rating',ascending=False,inplace=True)
 				res_df.rename(columns={'user':'USER','item':'COURSE_ID','rating':'SCORE'},inplace=True)
 		
 	return res_df
