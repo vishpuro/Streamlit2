@@ -1,3 +1,4 @@
+import time
 import streamlit as st
 
 ####--- Surprise ---####
@@ -613,6 +614,9 @@ def predict(model_name, user_ids, params):
 				enrolled_course_ids = user_ratings['item'].to_list()
 				all_courses = set(course_genres_df['COURSE_ID'].values)
 				unknown_courses = list(all_courses.difference(enrolled_course_ids))
+
+				st.write("Creating test sets...")
+				
 				#test_data=ratings_df[ratings_df['item'].isin(unselected_course_ids)]
 				test_data={}
 				test_data['user']=[2]*len(unknown_courses)
@@ -620,6 +624,7 @@ def predict(model_name, user_ids, params):
 				test_data['rating']=[4]*len(unknown_courses)
 				test_data=pd.DataFrame(test_data)
 
+				time.sleep(5)
 				st.write("Predicting Courses...")
 				
 				for i in range(test_data.shape[0]):
