@@ -362,8 +362,12 @@ def predict(model_name, user_ids, params):
 	embedding_size=16
 	if "sim_threshold" in params:
 		sim_threshold = params["sim_threshold"] / 100.0
-	if "k" in params:
+	if "k_max" in params:
 		k=params["k_max"]
+	if "similarity_measure" in params:
+		similarity_measure = params["similarity_measure"]
+	if "user_based" in params:
+		user_based = params["user_based"]
 	if "profile_sim_threshold" in params:
 		profile_sim_threshold = params["profile_sim_threshold"]
 	if "n_erollments" in params:
@@ -603,7 +607,7 @@ def predict(model_name, user_ids, params):
 				course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
 				#trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
 				trainset, testset = train_test_split(course_dataset, test_size=.95)
-				model=KNNBasic(k=k_max)
+				model=KNNBasic(k=k_max,sim_option={"name":similarity_measure,user_based=used_based})
 
 				st.write("Fitting KNN...")
 				
