@@ -675,7 +675,7 @@ def predict(model_name, user_ids, params):
 				
 				st.write("Predicting results...")
 				
-				encoded_user_id=user_idx2id_dict_test.keys()[user_idx2id_dict_test.values().index(user_id)]
+				encoded_user_id=list(user_idx2id_dict_test.keys())[list(user_idx2id_dict_test.values()).index(user_id)]
 				test_data=encoded_data_test[encoded_data_test['user']==encoded_user_id][['user','item']].to_numpy()
 				#st.write(test_data)
 				
