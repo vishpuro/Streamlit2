@@ -733,5 +733,16 @@ def predict(model_name, user_ids, params):
 				res_df=test_dataset
 				res_df.sort_values(by='rating',ascending=False,inplace=True)
 				res_df.rename(columns={'user':'USER','item':'COURSE_ID','rating':'SCORE'},inplace=True)
-		
-	return res_df
+
+				user_latent_features = model.get_layer('user_embedding_layer').get_weights()
+				item_latent_features = model.get_layer('item_embedding_layer').get_weights()
+
+
+
+
+
+	
+	if model_name==models[6]:
+		return red_df,user_latent_features,item_latent_features
+	else:
+		return res_df
