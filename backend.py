@@ -839,7 +839,7 @@ def predict(model_name, user_ids, params):
 				test_dataset= pd.DataFrame({'user':[user_id]*len(unknown_courses),'item':unknown_courses,'rating':[4]*len(unknown_courses)})
 				
 				# Merge user embedding features
-				user_emb_merged = pd.merge(rating_df, user_latent_features, how='left', left_on='user', right_on='user').fillna(0)
+				user_emb_merged = pd.merge(ratings_df, user_latent_features, how='left', left_on='user', right_on='user').fillna(0)
 				# Merge course embedding features
 				merged_df = pd.merge(user_emb_merged, item_latent_features, how='left', left_on='item', right_on='item').fillna(0)
 
