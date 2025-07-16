@@ -723,7 +723,8 @@ def predict(model_name, user_ids, params):
 				
 				x_train, x_val, x_test, y_train, y_val, y_test = generate_train_test_datasets(encoded_data)		
 				
-				num_users = len(ratings_df['user'].unique())
+				#num_users = len(ratings_df['user'].unique())
+				num_users = len(user_idx2id_dict)
 				num_items = len(course_idx2id_dict)
 				
 				model = RecommenderNet(num_users, num_items, embedding_size)
