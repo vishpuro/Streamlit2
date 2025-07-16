@@ -12,6 +12,9 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
+from sklearn.model_selection import RandomizedSearchCV
+from sklearn.linear_model import Ridge,Lasso,ElasticNet,LogisticRegression
+from xgboost import XGBClassifier
 
 ####--- Tensorflow ---####
 import tensorflow as tf
@@ -355,11 +358,15 @@ def train(model_name, params):
 
 # Prediction
 def predict(model_name, user_ids, params):
+	#defaults
 	sim_threshold = 0.6
 	k_max=40
 	profile_sim_threshold=1
 	n_erollments=100
 	embedding_size=16
+	item_latent_features=0
+	user_latent_features=0
+	#params
 	if "sim_threshold" in params:
 		sim_threshold = params["sim_threshold"] / 100.0
 	if "k_max" in params:
@@ -379,6 +386,14 @@ def predict(model_name, user_ids, params):
 		embedding_size = params["embedding_size"]
 	if "n_factors" in params:
 		n_factors=params["n_factors"]
+	if "item_latent_features" in params:
+		item_latent_features=params["item_latent_features"]
+	if "user_latent_features" in params:
+		user_latent_features=params["user_latent_features"]
+	if "reg_type" in params:
+		reg_type=params["reg_type"]
+	if "clas_type" in params:
+		clas_type=params["clas_type"]
 		
 	idx_id_dict, id_idx_dict = get_doc_dicts()
 	sim_matrix = load_course_sims().to_numpy()
@@ -734,15 +749,138 @@ def predict(model_name, user_ids, params):
 				res_df.sort_values(by='rating',ascending=False,inplace=True)
 				res_df.rename(columns={'user':'USER','item':'COURSE_ID','rating':'SCORE'},inplace=True)
 
-				user_latent_features = model.get_layer('user_embedding_layer').get_weights()
-				item_latent_features = model.get_layer('item_embedding_layer').get_weights()
+				user_latent_features = model.get_layer('user_embedding_layer').get_weights()[0]
+				user_latent_features = pd.DataFrame(user_latent_features,columns=["User_Feature_"+str(i) for i in range(user_latent_features.shape[1])])
+				user_latent_features['user']=[user_idx2id_dict[i] for i in encoded_data['user'].unique()]
+				
+				item_latent_features = model.get_layer('item_embedding_layer').get_weights()[0]
+				item_latent_features = pd.DataFrame(item_latent_features,columns=["Item_Feature_"+str(i) for i in range(item_latent_features.shape[1])])
+				item_latent_features['item']=[course_idx2id_dict[i] for i in encoded_data['item'].unique()]
+		######################################################### model 7 Regression models #############################################            
+		if model_name==models[7]:
+			with st.status("Starting Regression model: {reg_type}...", expanded=True):
+				ratings_df = load_ratings()
+				course_genres_df = load_course_genres()
+				user_ratings = ratings_df[ratings_df['user'] == user_id]
+				enrolled_course_ids = user_ratings['item'].to_list()
+				all_courses = set(course_genres_df['COURSE_ID'].values)
+				unknown_courses = list(all_courses.difference(enrolled_course_ids))
+				test_dataset= pd.DataFrame({'user':[user_id]*len(unknown_courses),'item':unknown_courses,'rating':[4]*len(unknown_courses)})
+				
+				# Merge user embedding features
+				user_emb_merged = pd.merge(rating_df, user_latent_features, how='left', left_on='user', right_on='user').fillna(0)
+				# Merge course embedding features
+				merged_df = pd.merge(user_emb_merged, item_latent_features, how='left', left_on='item', right_on='item').fillna(0)
 
+				# Define column names for user and course embedding features
+				u_features = [f"User_Feature_{i}" for i in range(len(user_latent_features))] 
+				c_features = [f"Item_Feature_{i}" for i in range(len(item_latent_features))]
+				
+				# Extract user embedding features
+				user_embeddings = merged_df[u_features]
+				# Extract course embedding features
+				course_embeddings = merged_df[c_features]
+				# Extract ratings
+				ratings = merged_df['rating']
+				
+				# Aggregate the two feature columns using element-wise add
+				regression_dataset = user_embeddings + course_embeddings.values
+				# Rename the columns of the resulting DataFrame
+				regression_dataset.columns = [f"Feature{i}" for i in range(len(item_latent_features))]# Assuming there are 16 features
+				# Add the 'rating' column from the original DataFrame to the regression dataset
+				regression_dataset['rating'] = ratings
+				
+				X = regression_dataset.iloc[:, :-1)]
+				y = regression_dataset.iloc[:, -1]
+				x_train,x_test,y_train,y_test = train_test_split(X,y,test_size=0.3, random_state=rs)
 
+				
+				if reg_type=="ridge":
+					model=Ridge()
+					parameters= {'alpha':scipy.stats.loguniform(10**-5,10**4)}
+				if reg_type=="Lasso":
+					model=Lasso()
+					parameters = {'alpha': scipy.stats.loguniform(10**-5,10**4)}
+				if reg_type=="ElasticNet":
+					model=ElasticNet()
+					parameters_elastic = {'alpha': scipy.stats.loguniform(10**-5,10**4),'l1_ratio': scipy.stats.loguniform(10**-5,1)}
 
+				
+				model_cv=RandomizedSearchCV(estimator=model,param_distributions=parameters,n_iter=500,scoring='neg_mean_squared_error',n_jobs=-1,cv=3)
+				model_cv.fit(x_train,y_train)
+				model.set_params(**model_cv.best_params_)
+				model.fit(X,y)
 
+				test_data=encoded_test_dataset[['user','item']].to_numpy()
+				pred=model.predict(test_data)
+				test_dataset.loc[:,'rating']=pred
+				res_df=test_dataset
+				res_df.sort_values(by='rating',ascending=False,inplace=True)
+				res_df.rename(columns={'user':'USER','item':'COURSE_ID','rating':'SCORE'},inplace=True)
+				
+		######################################################### model 7 Regression models #############################################            
+		if model_name==models[8]:
+			with st.status("Starting Classification model: {clas_type}...", expanded=True):
+				ratings_df = load_ratings()
+				course_genres_df = load_course_genres()
+				user_ratings = ratings_df[ratings_df['user'] == user_id]
+				enrolled_course_ids = user_ratings['item'].to_list()
+				all_courses = set(course_genres_df['COURSE_ID'].values)
+				unknown_courses = list(all_courses.difference(enrolled_course_ids))
+				test_dataset= pd.DataFrame({'user':[user_id]*len(unknown_courses),'item':unknown_courses,'rating':[4]*len(unknown_courses)})
+				
+				# Merge user embedding features
+				user_emb_merged = pd.merge(rating_df, user_latent_features, how='left', left_on='user', right_on='user').fillna(0)
+				# Merge course embedding features
+				merged_df = pd.merge(user_emb_merged, item_latent_features, how='left', left_on='item', right_on='item').fillna(0)
 
+				# Define column names for user and course embedding features
+				u_features = [f"User_Feature_{i}" for i in range(len(user_latent_features))] 
+				c_features = [f"Item_Feature_{i}" for i in range(len(item_latent_features))]
+				
+				# Extract user embedding features
+				user_embeddings = merged_df[u_features]
+				# Extract course embedding features
+				course_embeddings = merged_df[c_features]
+				# Extract ratings
+				ratings = merged_df['rating']
+				
+				# Aggregate the two feature columns using element-wise add
+				regression_dataset = user_embeddings + course_embeddings.values
+				# Rename the columns of the resulting DataFrame
+				regression_dataset.columns = [f"Feature{i}" for i in range(len(item_latent_features))]# Assuming there are 16 features
+				# Add the 'rating' column from the original DataFrame to the regression dataset
+				regression_dataset['rating'] = ratings
+				
+				X = regression_dataset.iloc[:, :-1)]
+				y = regression_dataset.iloc[:, -1]
+				x_train,x_test,y_train,y_test = train_test_split(X,y,test_size=0.3, random_state=rs)
+
+				
+				if reg_type=="ridge":
+					model=Ridge()
+					parameters= {'alpha':scipy.stats.loguniform(10**-5,10**4)}
+				if reg_type=="Lasso":
+					model=Lasso()
+					parameters = {'alpha': scipy.stats.loguniform(10**-5,10**4)}
+				if reg_type=="ElasticNet":
+					model=ElasticNet()
+					parameters_elastic = {'alpha': scipy.stats.loguniform(10**-5,10**4),'l1_ratio': scipy.stats.loguniform(10**-5,1)}
+
+				
+				model_cv=RandomizedSearchCV(estimator=model,param_distributions=parameters,n_iter=500,scoring='neg_mean_squared_error',n_jobs=-1,cv=3)
+				model_cv.fit(x_train,y_train)
+				model.set_params(**model_cv.best_params_)
+				model.fit(X,y)
+
+				test_data=encoded_test_dataset[['user','item']].to_numpy()
+				pred=model.predict(test_data)
+				test_dataset.loc[:,'rating']=pred
+				res_df=test_dataset
+				res_df.sort_values(by='rating',ascending=False,inplace=True)
+				res_df.rename(columns={'user':'USER','item':'COURSE_ID','rating':'SCORE'},inplace=True)
 	
 	if model_name==models[6]:
-		return red_df,user_latent_features,item_latent_features
+		return red_df,user_latent_features,item_latent_features,user_idx2id_dict,course_idx2id_dict
 	else:
 		return res_df
