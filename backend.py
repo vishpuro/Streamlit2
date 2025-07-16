@@ -856,7 +856,8 @@ def predict(model_name, user_ids, params):
 				
 		######################################################### model 8 Classification models #############################################            
 		if model_name==models[8]:
-			with st.status("Starting Classification model: ",clas_type,"...", expanded=True):
+			with st.status("Starting Classification model: ", expanded=True):
+				st.write(clas_type,"...")
 				ratings_df = load_ratings()
 				course_genres_df = load_course_genres()
 				user_ratings = ratings_df[ratings_df['user'] == user_id]
