@@ -894,7 +894,7 @@ def predict(model_name, user_ids, params):
 					parameters = {
 						'penalty': ['l1','l2'],
 						'C': scipy.stats.loguniform(10**-2,10**2)}
-				if clas_type=="xgboost":
+				if clas_type=="Xgboost":
 					model = XGBClassifier(n_jobs=-1,random_state=123)
 					parameters = {
 						'reg_alpha': scipy.stats.loguniform(10**-10,10**1),
