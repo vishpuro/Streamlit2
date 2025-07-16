@@ -890,6 +890,8 @@ def predict(model_name, user_ids, params):
 				res_df.rename(columns={'user':'USER','item':'COURSE_ID','rating':'SCORE'},inplace=True)
 	
 	if model_name==models[6]:
+		st.write("model 6: res_df, user_latent_features, item_latent_features")
 		return res_df,user_latent_features,item_latent_features
 	else:
+		st.write("not mode 6")
 		return res_df
