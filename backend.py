@@ -905,7 +905,7 @@ def predict(model_name, user_ids, params):
 						'gamma': scipy.stats.loguniform(10**-10,10**1),}
 
 				st.write("Cross validation over parameters...")
-				model_cv=RandomizedSearchCV(estimator=model,param_distributions=parameters,n_iter=500,scoring='balanced_accuracy',n_jobs=-1,cv=3)
+				model_cv=RandomizedSearchCV(estimator=model,param_distributions=parameters,n_iter=100,scoring='balanced_accuracy',n_jobs=-1,cv=3)
 				model_cv.fit(x_train,y_train)
 				
 				st.write("Best Parameters: ",model_cv.best_params_)
