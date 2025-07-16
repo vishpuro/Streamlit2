@@ -25,6 +25,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 import pandas as pd
 import numpy as np
+import scipy
 
 
 models = ("Course Similarity",
