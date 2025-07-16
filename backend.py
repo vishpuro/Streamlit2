@@ -724,7 +724,7 @@ def predict(model_name, user_ids, params):
 				x_train, x_val, x_test, y_train, y_val, y_test = generate_train_test_datasets(encoded_data)		
 				
 				num_users = len(ratings_df['user'].unique())
-				num_items = len(ratings_df['item'].unique())
+				num_items = len(course_idx2id_dict)
 				
 				model = RecommenderNet(num_users, num_items, embedding_size)
 				early_stopping =EarlyStopping(monitor='val_loss', patience=2)
@@ -755,6 +755,8 @@ def predict(model_name, user_ids, params):
 				
 				item_latent_features = model.get_layer('item_embedding_layer').get_weights()[0]
 				item_latent_features = pd.DataFrame(item_latent_features,columns=["Item_Feature_"+str(i) for i in range(item_latent_features.shape[1])])
+				st.write(len(course_idx2id_dict))
+				st.write(len(encoded_data['item'].unique()))
 				item_latent_features['item']=[course_idx2id_dict[i] for i in encoded_data['item'].unique()]
 		######################################################### model 7 Regression models #############################################            
 		if model_name==models[7]:
