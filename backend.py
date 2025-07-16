@@ -822,8 +822,8 @@ def predict(model_name, user_ids, params):
 				user_emb_merged = pd.merge(test_dataset, user_latent_features, how='left', left_on='user', right_on='user').fillna(0)
 				merged_df = pd.merge(user_emb_merged, item_latent_features, how='left', left_on='item', right_on='item').fillna(0)
 				# Define column names for user and course embedding features
-				u_features = [f"User_Feature_{i}" for i in range(len(user_latent_features.columns)-1)] 
-				c_features = [f"Item_Feature_{i}" for i in range(len(item_latent_features.columns)-1)]
+				#u_features = [f"User_Feature_{i}" for i in range(len(user_latent_features.columns)-1)] 
+				#c_features = [f"Item_Feature_{i}" for i in range(len(item_latent_features.columns)-1)]
 				# Extract user embedding features
 				user_embeddings = merged_df[u_features]
 				# Extract course embedding features
