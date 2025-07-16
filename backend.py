@@ -9,7 +9,7 @@ from surprise.model_selection import train_test_split as train_test_split_surpri
 
 ####--- Sklearn ---####
 from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score,accuracy_score,recall_score,precision_score,f1_score,roc_auc_score,balanced_accuracy_score,root_mean_squared_error
 from sklearn.model_selection import RandomizedSearchCV
@@ -887,6 +887,8 @@ def predict(model_name, user_ids, params):
 				
 				X = interaction_dataset.iloc[:, :-1]
 				y = interaction_dataset.iloc[:, -1]
+				label_encoder = LabelEncoder()
+				y = label_encoder.fit_transform(y.values.ravel())
 				x_train,x_test,y_train,y_test = train_test_split_sklearn(X,y,test_size=0.3, random_state=123)
 
 
@@ -936,6 +938,7 @@ def predict(model_name, user_ids, params):
 				#test_data=regression_data.iloc[merged_df[(merged_df['user']==user_id)&(merged_df['item'].isin(unknown_courses))].index,:]
 				st.write("Predicting results...")
 				pred=model.predict(test_data)
+				pred=label_encoder.inverse_transform(pred)
 
 				st.write("Outputting...")
 				test_dataset.loc[:,'rating']=pred
