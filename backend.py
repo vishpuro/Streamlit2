@@ -803,7 +803,7 @@ def predict(model_name, user_ids, params):
 				
 				X = regression_dataset.iloc[:, :-1]
 				y = regression_dataset.iloc[:, -1]
-				x_train,x_test,y_train,y_test = train_test_split(X,y,test_size=0.3, random_state=rs)
+				x_train,x_test,y_train,y_test = train_test_split(X,y,test_size=0.3, random_state=123)
 
 				
 				if reg_type=="ridge":
