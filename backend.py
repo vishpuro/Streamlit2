@@ -779,6 +779,8 @@ def predict(model_name, user_ids, params):
 				# Merge user embedding features
 				user_emb_merged = pd.merge(ratings_df, user_latent_features, how='left', left_on='user', right_on='user').fillna(0)
 				# Merge course embedding features
+				st.write(user_emb_merged.head())
+				st.write(item_latent_features.head())
 				merged_df = pd.merge(user_emb_merged, item_latent_features, how='left', left_on='item', right_on='item').fillna(0)
 
 				# Define column names for user and course embedding features
