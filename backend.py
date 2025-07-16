@@ -770,7 +770,8 @@ def predict(model_name, user_ids, params):
 				item_latent_features['item']=[course_idx2id_dict[i] for i in encoded_full['item'].unique()]
 		######################################################### model 7 Regression models #############################################            
 		if model_name==models[7]:
-			with st.status("Starting Regression model: ",reg_type,"...", expanded=True):
+			with st.status("Starting Regression model: ", expanded=True):
+				st.write(Reg_type,"...")
 				ratings_df = load_ratings()
 				course_genres_df = load_course_genres()
 				user_ratings = ratings_df[ratings_df['user'] == user_id]
