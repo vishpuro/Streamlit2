@@ -763,7 +763,7 @@ def predict(model_name, user_ids, params):
 				item_latent_features = model.get_layer('item_embedding_layer').get_weights()[0]
 				item_latent_features = pd.DataFrame(item_latent_features,columns=["Item_Feature_"+str(i) for i in range(item_latent_features.shape[1])])
 				st.write(len(course_idx2id_dict))
-				st.write(len(encoded_data['item'].unique()))
+				st.write(len(encoded_full['item'].unique()))
 				item_latent_features['item']=[course_idx2id_dict[i] for i in encoded_full['item'].unique()]
 		######################################################### model 7 Regression models #############################################            
 		if model_name==models[7]:
