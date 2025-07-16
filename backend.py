@@ -797,7 +797,7 @@ def predict(model_name, user_ids, params):
 				# Aggregate the two feature columns using element-wise add
 				regression_dataset = user_embeddings + course_embeddings.values
 				# Rename the columns of the resulting DataFrame
-				regression_dataset.columns = [f"Feature{i}" for i in range(len(item_latent_features))]# Assuming there are 16 features
+				regression_dataset.columns = [f"Feature{i}" for i in range(len(item_latent_features.columns)-1)]# Assuming there are 16 features
 				# Add the 'rating' column from the original DataFrame to the regression dataset
 				regression_dataset['rating'] = ratings
 				
