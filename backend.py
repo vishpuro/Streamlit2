@@ -810,12 +810,16 @@ def predict(model_name, user_ids, params):
 					parameters = {'alpha': scipy.stats.loguniform(10**-5,10**4)}
 				if reg_type=="ElasticNet":
 					model=ElasticNet()
-					parameters_elastic = {'alpha': scipy.stats.loguniform(10**-5,10**4),'l1_ratio': scipy.stats.loguniform(10**-5,1)}
+					parameters = {'alpha': scipy.stats.loguniform(10**-5,10**4),'l1_ratio': scipy.stats.loguniform(10**-5,1)}
 
-				
+				st.write("Cross validation over parameters...")
 				model_cv=RandomizedSearchCV(estimator=model,param_distributions=parameters,n_iter=500,scoring='neg_mean_squared_error',n_jobs=-1,cv=3)
 				model_cv.fit(x_train,y_train)
+				
+				st.write("Best Parameters: ",model_cv.best_params_)
 				model.set_params(**model_cv.best_params_)
+				
+				st.write("Refitting with best Parameters...")
 				model.fit(X,y)
 				
 				# Merge user embedding features
@@ -840,7 +844,10 @@ def predict(model_name, user_ids, params):
 				#y = regression_dataset.iloc[:, -1]
 				#test_data=encoded_test_dataset[['user','item']].to_numpy()
 				#test_data=regression_data.iloc[merged_df[(merged_df['user']==user_id)&(merged_df['item'].isin(unknown_courses))].index,:]
+				st.write("Predicting results...")
 				pred=model.predict(test_data)
+
+				st.write("Outputting...")
 				test_dataset.loc[:,'rating']=pred
 				res_df=test_dataset
 				res_df.sort_values(by='rating',ascending=False,inplace=True)
