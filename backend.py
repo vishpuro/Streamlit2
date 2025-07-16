@@ -5,14 +5,15 @@ import streamlit as st
 from surprise.dataset import DatasetAutoFolds
 from surprise import KNNBasic, NMF
 from surprise import Dataset, Reader
-from surprise.model_selection import train_test_split_surprise
+from surprise.model_selection import train_test_split as train_test_split_surprise
 
 ####--- Sklearn ---####
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
-from sklearn.model_selection import RandomizedSearchCV,train_test_split_sklearn
+from sklearn.model_selection import RandomizedSearchCV
+from sklearn.model_selection import train_test_split as train_test_split_sklearn
 from sklearn.linear_model import Ridge,Lasso,ElasticNet,LogisticRegression
 from xgboost import XGBClassifier
 
