@@ -790,7 +790,7 @@ def predict(model_name, user_ids, params):
 				# Add the 'rating' column from the original DataFrame to the regression dataset
 				regression_dataset['rating'] = ratings
 				
-				X = regression_dataset.iloc[:, :-1)]
+				X = regression_dataset.iloc[:, :-1]
 				y = regression_dataset.iloc[:, -1]
 				x_train,x_test,y_train,y_test = train_test_split(X,y,test_size=0.3, random_state=rs)
 
@@ -852,7 +852,7 @@ def predict(model_name, user_ids, params):
 				# Add the 'rating' column from the original DataFrame to the regression dataset
 				regression_dataset['rating'] = ratings
 				
-				X = regression_dataset.iloc[:, :-1)]
+				X = regression_dataset.iloc[:, :-1]
 				y = regression_dataset.iloc[:, -1]
 				x_train,x_test,y_train,y_test = train_test_split(X,y,test_size=0.3, random_state=rs)
 
