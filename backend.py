@@ -889,7 +889,7 @@ def predict(model_name, user_ids, params):
 				y = interaction_dataset.iloc[:, -1]
 				label_encoder = LabelEncoder()
 				y = label_encoder.fit_transform(y.values.ravel())
-				x_train,x_test,y_train,y_test = train_test_split_sklearn(X,y,test_size=0.3, random_state=123)
+				x_train,x_test,y_train,y_test = train_test_split_sklearn(X,y,test_size=0.9, random_state=123)
 
 
 				if clas_type=="Logistic":
