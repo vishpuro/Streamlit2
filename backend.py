@@ -807,7 +807,7 @@ def predict(model_name, user_ids, params):
 				x_train,x_test,y_train,y_test = train_test_split_sklearn(X,y,test_size=0.3, random_state=123)
 
 				
-				if reg_type=="ridge":
+				if reg_type=="Ridge":
 					model=Ridge()
 					parameters= {'alpha':scipy.stats.loguniform(10**-5,10**4)}
 				if reg_type=="Lasso":
