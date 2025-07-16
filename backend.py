@@ -781,14 +781,14 @@ def predict(model_name, user_ids, params):
 				# Merge user embedding features
 				user_emb_merged = pd.merge(ratings_df, user_latent_features, how='left', left_on='user', right_on='user').fillna(0)
 				# Merge course embedding features
-				st.write(user_emb_merged.head())
-				st.write(item_latent_features.head())
+				#st.write(user_emb_merged.head())
+				#st.write(item_latent_features.head())
 				merged_df = pd.merge(user_emb_merged, item_latent_features, how='left', left_on='item', right_on='item').fillna(0)
-				st.write(merged_df.head())
+				#st.write(merged_df.head())
 				# Define column names for user and course embedding features
 				u_features = [f"User_Feature_{i}" for i in range(len(user_latent_features.columns)-1)] 
 				c_features = [f"Item_Feature_{i}" for i in range(len(item_latent_features.columns)-1)]
-				st.write(u_features)
+				#st.write(u_features)
 				# Extract user embedding features
 				user_embeddings = merged_df[u_features]
 				# Extract course embedding features
@@ -805,7 +805,7 @@ def predict(model_name, user_ids, params):
 				
 				X = regression_dataset.iloc[:, :-1]
 				y = regression_dataset.iloc[:, -1]
-				x_train,x_test,y_train,y_test = train_test_split_sklearn(X,y,test_size=0.3, random_state=123)
+				x_train,x_test,y_train,y_test = train_test_split_sklearn(X,y,test_size=0.9, random_state=123)
 
 				
 				if reg_type=="Ridge":
