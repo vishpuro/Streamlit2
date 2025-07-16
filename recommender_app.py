@@ -154,17 +154,27 @@ elif model_selection == backend.models[5]:
 	params['n_factors'] = n_factors
 
 elif model_selection == backend.models[6]:
-	embedding_size = st.sidebar.slider('Embedding size',min_value=16, max_value=128,value=32, step=8)
+	embedding_size = st.sidebar.slider('Embedding size',min_value=16, max_value=128,value=16, step=8)
 	params['embedding_size'] = embedding_size
-
-# Training
-st.sidebar.subheader('3. Training: ')
-training_button = st.sidebar.button("Train Model")
-training_text = st.sidebar.text('')
-# Start training process
+	
+elif (model_selection == backend.models[7]) and ('user_latent_features' in st.session_state) and ('item_latent_features' in st.session_state):
+	options_reg = ["Ridge", "Lasso", "ElasticNet"]
+	selection_reg = st.sidebar.segmented_control("Regression Algorithm", options_reg, selection_mode="single",default="Ridge")
+	st.sidebar.markdown(f"Your selected option: {selection_reg}.")
+	params['reg_type'] = selection_reg
+	params['user_latent_features'] = st.session_state.user_latent_features
+	params['item_latent_features'] = st.session_state.user_latent_features
+	
+elif (model_selection == backend.models[8]) and ('user_latent_features' in st.session_state) and ('item_latent_features' in st.session_state):
+	options_clas = ["Logistic", "Xgboost"]
+	selection_clas = st.sidebar.segmented_control("Classification Algorithm", options_clas, selection_mode="single",default="Logistic")
+	st.sidebar.markdown(f"Your selected option: {selection_clas}.")
+	params['clas_type'] = selection_clas
+	params['user_latent_features'] = st.session_state.user_latent_features
+	params['item_latent_features'] = st.session_state.user_latent_features
 
 # Prediction
-st.sidebar.subheader('4. Prediction')
+st.sidebar.subheader('3. Train model and predict results')
 
 # Start prediction process
 pred_button = st.sidebar.button("Recommend New Courses")
@@ -178,11 +188,25 @@ if pred_button and selected_courses_df.shape[0] > 0:
 	#train(model_selection, params) 
     
 	user_ids = [new_id]
-	res_df = predict(model_selection, user_ids, params)
+	
+	if model_selection == backend.models[6]:
+		res_df,user_latent_features,item_latent_features = predict(model_selection, user_ids, params)
+		st.session_state['user_latent_features'] = user_latent_features
+		st.session_state['item_latent_features'] = item_latent_features
+		
+	elif (model_selection == backend.models[7]) or (model_selection == backend.models[8]):
+		if ('user_latent_features' not in st.session_state) or ('item_latent_features' not in st.session_state):
+			st.write("Embeddings not found \nPlease run Neural Network model to generate Embeddings")
+		else:
+			res_df = predict(model_selection, user_ids, params)
+	else:
+		res_df = predict(model_selection, user_ids, params)
+	
 	if (model_selection == backend.models[2])or(model_selection == backend.models[3]):
 		res_df = res_df[['COURSE_ID']]
 	else:
 		res_df = res_df[['COURSE_ID', 'SCORE']]
+		
 	course_df = load_courses()
 	res_df = pd.merge(res_df, course_df, on=["COURSE_ID"]).drop('COURSE_ID', axis=1)
 	st.dataframe(res_df)
