@@ -780,22 +780,16 @@ def predict(model_name, user_ids, params):
 				
 				# Merge user embedding features
 				user_emb_merged = pd.merge(ratings_df, user_latent_features, how='left', left_on='user', right_on='user').fillna(0)
-				# Merge course embedding features
-				#st.write(user_emb_merged.head())
-				#st.write(item_latent_features.head())
 				merged_df = pd.merge(user_emb_merged, item_latent_features, how='left', left_on='item', right_on='item').fillna(0)
-				#st.write(merged_df.head())
 				# Define column names for user and course embedding features
 				u_features = [f"User_Feature_{i}" for i in range(len(user_latent_features.columns)-1)] 
 				c_features = [f"Item_Feature_{i}" for i in range(len(item_latent_features.columns)-1)]
-				#st.write(u_features)
 				# Extract user embedding features
 				user_embeddings = merged_df[u_features]
 				# Extract course embedding features
 				course_embeddings = merged_df[c_features]
 				# Extract ratings
 				ratings = merged_df['rating']
-				
 				# Aggregate the two feature columns using element-wise add
 				regression_dataset = user_embeddings + course_embeddings.values
 				# Rename the columns of the resulting DataFrame
@@ -823,8 +817,29 @@ def predict(model_name, user_ids, params):
 				model_cv.fit(x_train,y_train)
 				model.set_params(**model_cv.best_params_)
 				model.fit(X,y)
-
-				test_data=encoded_test_dataset[['user','item']].to_numpy()
+				
+				# Merge user embedding features
+				user_emb_merged = pd.merge(test_dataset, user_latent_features, how='left', left_on='user', right_on='user').fillna(0)
+				merged_df = pd.merge(user_emb_merged, item_latent_features, how='left', left_on='item', right_on='item').fillna(0)
+				# Define column names for user and course embedding features
+				u_features = [f"User_Feature_{i}" for i in range(len(user_latent_features.columns)-1)] 
+				c_features = [f"Item_Feature_{i}" for i in range(len(item_latent_features.columns)-1)]
+				# Extract user embedding features
+				user_embeddings = merged_df[u_features]
+				# Extract course embedding features
+				course_embeddings = merged_df[c_features]
+				# Extract ratings
+				ratings = merged_df['rating']
+				# Aggregate the two feature columns using element-wise add
+				regression_dataset = user_embeddings + course_embeddings.values
+				# Rename the columns of the resulting DataFrame
+				regression_dataset.columns = [f"Feature{i}" for i in range(len(item_latent_features.columns)-1)]# Assuming there are 16 features
+				# Add the 'rating' column from the original DataFrame to the regression dataset
+				regression_dataset['rating'] = ratings
+				test_data = regression_dataset.iloc[:, :-1]
+				#y = regression_dataset.iloc[:, -1]
+				#test_data=encoded_test_dataset[['user','item']].to_numpy()
+				#test_data=regression_data.iloc[merged_df[(merged_df['user']==user_id)&(merged_df['item'].isin(unknown_courses))].index,:]
 				pred=model.predict(test_data)
 				test_dataset.loc[:,'rating']=pred
 				res_df=test_dataset
