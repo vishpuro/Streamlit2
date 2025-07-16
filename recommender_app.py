@@ -171,7 +171,7 @@ elif (model_selection == backend.models[8]) and ('user_latent_features' in st.se
 	st.sidebar.markdown(f"Your selected option: {selection_clas}.")
 	params['clas_type'] = selection_clas
 	params['user_latent_features'] = st.session_state.user_latent_features
-	params['item_latent_features'] = st.session_state.user_latent_features
+	params['item_latent_features'] = st.session_state.item_latent_features
 
 # Prediction
 st.sidebar.subheader('3. Train model and predict results')
