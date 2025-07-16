@@ -163,7 +163,7 @@ elif (model_selection == backend.models[7]) and ('user_latent_features' in st.se
 	st.sidebar.markdown(f"Your selected option: {selection_reg}.")
 	params['reg_type'] = selection_reg
 	params['user_latent_features'] = st.session_state.user_latent_features
-	params['item_latent_features'] = st.session_state.user_latent_features
+	params['item_latent_features'] = st.session_state.item_latent_features
 	
 elif (model_selection == backend.models[8]) and ('user_latent_features' in st.session_state) and ('item_latent_features' in st.session_state):
 	options_clas = ["Logistic", "Xgboost"]
