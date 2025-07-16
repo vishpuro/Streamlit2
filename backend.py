@@ -710,21 +710,27 @@ def predict(model_name, user_ids, params):
 				st.write("Encoding data...")
 				
 				encoded_data, user_idx2id_dict, course_idx2id_dict = process_dataset(ratings_df)
+				
+				st.write(len(course_idx2id_dict))
+				st.write(len(encoded_data['item'].unique()))
+				
 				encoded_user_id=list(user_idx2id_dict.keys())[list(user_idx2id_dict.values()).index(user_id)]
 				encoded_unknown_courses=[]
+				encoded_full=encoded_data.copy()
 				for i in unknown_courses:
 					if i in ratings_df.item.unique():
 						encoded_unknown_courses.append(list(course_idx2id_dict.keys())[list(course_idx2id_dict.values()).index(i)])
 					else:
 						course_idx2id_dict[list(course_idx2id_dict.keys())[-1]+1]=i
 						encoded_unknown_courses.append(list(course_idx2id_dict.keys())[list(course_idx2id_dict.values()).index(i)])
+						encoded_full.append(list(course_idx2id_dict.keys())[list(course_idx2id_dict.values()).index(i)])
 						
 				encoded_test_dataset= pd.DataFrame({'user':[encoded_user_id]*len(encoded_unknown_courses),'item':encoded_unknown_courses,'rating':[4]*len(encoded_unknown_courses)})
 				
 				x_train, x_val, x_test, y_train, y_val, y_test = generate_train_test_datasets(encoded_data)		
 				
 				#num_users = len(ratings_df['user'].unique())
-				num_users = len(user_idx2id_dict)
+				num_users = len(ratings_df.user.unique())
 				num_items = len(course_idx2id_dict)
 				
 				model = RecommenderNet(num_users, num_items, embedding_size)
@@ -758,7 +764,7 @@ def predict(model_name, user_ids, params):
 				item_latent_features = pd.DataFrame(item_latent_features,columns=["Item_Feature_"+str(i) for i in range(item_latent_features.shape[1])])
 				st.write(len(course_idx2id_dict))
 				st.write(len(encoded_data['item'].unique()))
-				item_latent_features['item']=[course_idx2id_dict[i] for i in encoded_data['item'].unique()]
+				item_latent_features['item']=[course_idx2id_dict[i] for i in encoded_full['item'].unique()]
 		######################################################### model 7 Regression models #############################################            
 		if model_name==models[7]:
 			with st.status("Starting Regression model: {reg_type}...", expanded=True):
