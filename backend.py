@@ -5,14 +5,14 @@ import streamlit as st
 from surprise.dataset import DatasetAutoFolds
 from surprise import KNNBasic, NMF
 from surprise import Dataset, Reader
-from surprise.model_selection import train_test_split
+from surprise.model_selection import train_test_split_surprise
 
 ####--- Sklearn ---####
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
-from sklearn.model_selection import RandomizedSearchCV
+from sklearn.model_selection import RandomizedSearchCV,train_test_split_sklearn
 from sklearn.linear_model import Ridge,Lasso,ElasticNet,LogisticRegression
 from xgboost import XGBClassifier
 
@@ -628,7 +628,7 @@ def predict(model_name, user_ids, params):
 				reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
 				course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
 				#trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
-				trainset, testset = train_test_split(course_dataset, test_size=.95)
+				trainset, testset = train_test_split_surprise(course_dataset, test_size=.95)
 				model=KNNBasic(k=k_max,sim_option={"name":similarity_measure,"user_based":user_based})
 
 				st.write("Fitting KNN...")
@@ -665,7 +665,7 @@ def predict(model_name, user_ids, params):
 				reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
 				course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
 				#trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
-				trainset, testset = train_test_split(course_dataset, test_size=.95)
+				trainset, testset = train_test_split_surprise(course_dataset, test_size=.95)
 				model=NMF(n_factors=n_factors,random_state=123,n_epochs=100)
 
 				st.write("Fitting NMF...")
@@ -803,7 +803,7 @@ def predict(model_name, user_ids, params):
 				
 				X = regression_dataset.iloc[:, :-1]
 				y = regression_dataset.iloc[:, -1]
-				x_train,x_test,y_train,y_test = train_test_split(X,y,test_size=0.3, random_state=123)
+				x_train,x_test,y_train,y_test = train_test_split_sklearn(X,y,test_size=0.3, random_state=123)
 
 				
 				if reg_type=="ridge":
