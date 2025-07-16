@@ -11,10 +11,11 @@ from surprise.model_selection import train_test_split as train_test_split_surpri
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-from sklearn.metrics import silhouette_score
+from sklearn.metrics import silhouette_score,accuracy_score,recall_score,precision_score,f1_score,roc_auc_score,balanced_accuracy_score,root_mean_squared_error
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.model_selection import train_test_split as train_test_split_sklearn
 from sklearn.linear_model import Ridge,Lasso,ElasticNet,LogisticRegression
+
 from xgboost import XGBClassifier
 
 ####--- Tensorflow ---####
@@ -769,7 +770,7 @@ def predict(model_name, user_ids, params):
 				item_latent_features['item']=[course_idx2id_dict[i] for i in encoded_full['item'].unique()]
 		######################################################### model 7 Regression models #############################################            
 		if model_name==models[7]:
-			with st.status("Starting Regression model: {reg_type}...", expanded=True):
+			with st.status("Starting Regression model: ",reg_type,"...", expanded=True):
 				ratings_df = load_ratings()
 				course_genres_df = load_course_genres()
 				user_ratings = ratings_df[ratings_df['user'] == user_id]
@@ -854,7 +855,92 @@ def predict(model_name, user_ids, params):
 				res_df.rename(columns={'user':'USER','item':'COURSE_ID','rating':'SCORE'},inplace=True)
 				
 		######################################################### model 8 Classification models #############################################            
+		if model_name==models[8]:
+			with st.status("Starting Classification model: ",clas_type,"...", expanded=True):
+				ratings_df = load_ratings()
+				course_genres_df = load_course_genres()
+				user_ratings = ratings_df[ratings_df['user'] == user_id]
+				enrolled_course_ids = user_ratings['item'].to_list()
+				all_courses = set(course_genres_df['COURSE_ID'].values)
+				unknown_courses = list(all_courses.difference(enrolled_course_ids))
+				test_dataset= pd.DataFrame({'user':[user_id]*len(unknown_courses),'item':unknown_courses,'rating':[4]*len(unknown_courses)})
+				
+				# Merge user embedding features
+				user_emb_merged = pd.merge(ratings_df, user_latent_features, how='left', left_on='user', right_on='user').fillna(0)
+				merged_df = pd.merge(user_emb_merged, item_latent_features, how='left', left_on='item', right_on='item').fillna(0)
+				# Define column names for user and course embedding features
+				u_features = [f"User_Feature_{i}" for i in range(len(user_latent_features.columns)-1)] 
+				c_features = [f"Item_Feature_{i}" for i in range(len(item_latent_features.columns)-1)]
+				# Extract user embedding features
+				user_embeddings = merged_df[u_features]
+				# Extract course embedding features
+				course_embeddings = merged_df[c_features]
+				# Extract ratings
+				ratings = merged_df['rating']
+				# Aggregate the two feature columns using element-wise add
+				interaction_dataset = user_embeddings + course_embeddings.values
+				# Rename the columns of the resulting DataFrame
+				interaction_dataset.columns = [f"Feature{i}" for i in range(len(item_latent_features.columns)-1)]# Assuming there are 16 features
+				# Add the 'rating' column from the original DataFrame to the regression dataset
+				interaction_dataset['rating'] = ratings
+				
+				X = interaction_dataset.iloc[:, :-1]
+				y = interaction_dataset.iloc[:, -1]
+				x_train,x_test,y_train,y_test = train_test_split_sklearn(X,y,test_size=0.9, random_state=123)
 
+
+				if clas_type=="Logistic":
+					model= LogisticRegression(solver='saga',n_jobs=-1,random_state=123)
+					parameters = {
+						'penalty': ['l1','l2'],
+						'C': scipy.stats.loguniform(10**-2,10**2)}
+				if clas_type=="xgboost":
+					model = XGBClassifier(n_jobs=-1,random_state=123)
+					parameters = {
+						'reg_alpha': scipy.stats.loguniform(10**-10,10**1),
+						'reg_lambda': scipy.stats.loguniform(10**-10,10**3),
+						'gamma': scipy.stats.loguniform(10**-10,10**1),}
+
+				st.write("Cross validation over parameters...")
+				model_cv=RandomizedSearchCV(estimator=model,param_distributions=parameters,n_iter=500,scoring='balanced_accuracy',n_jobs=-1,cv=3)
+				model_cv.fit(x_train,y_train)
+				
+				st.write("Best Parameters: ",model_cv.best_params_)
+				model.set_params(**model_cv.best_params_)
+				
+				st.write("Refitting with best Parameters...")
+				model.fit(X,y)
+				
+				# Merge user embedding features
+				user_emb_merged = pd.merge(test_dataset, user_latent_features, how='left', left_on='user', right_on='user').fillna(0)
+				merged_df = pd.merge(user_emb_merged, item_latent_features, how='left', left_on='item', right_on='item').fillna(0)
+				# Define column names for user and course embedding features
+				#u_features = [f"User_Feature_{i}" for i in range(len(user_latent_features.columns)-1)] 
+				#c_features = [f"Item_Feature_{i}" for i in range(len(item_latent_features.columns)-1)]
+				# Extract user embedding features
+				user_embeddings = merged_df[u_features]
+				# Extract course embedding features
+				course_embeddings = merged_df[c_features]
+				# Extract ratings
+				ratings = merged_df['rating']
+				# Aggregate the two feature columns using element-wise add
+				interaction_dataset = user_embeddings + course_embeddings.values
+				# Rename the columns of the resulting DataFrame
+				interaction_dataset.columns = [f"Feature{i}" for i in range(len(item_latent_features.columns)-1)]# Assuming there are 16 features
+				# Add the 'rating' column from the original DataFrame to the regression dataset
+				interaction_dataset['rating'] = ratings
+				test_data = interaction_dataset.iloc[:, :-1]
+				#y = regression_dataset.iloc[:, -1]
+				#test_data=encoded_test_dataset[['user','item']].to_numpy()
+				#test_data=regression_data.iloc[merged_df[(merged_df['user']==user_id)&(merged_df['item'].isin(unknown_courses))].index,:]
+				st.write("Predicting results...")
+				pred=model.predict(test_data)
+
+				st.write("Outputting...")
+				test_dataset.loc[:,'rating']=pred
+				res_df=test_dataset
+				res_df.sort_values(by='rating',ascending=False,inplace=True)
+				res_df.rename(columns={'user':'USER','item':'COURSE_ID','rating':'SCORE'},inplace=True)
 	
 	if model_name==models[6]:
 		#st.write("model 6: res_df, user_latent_features, item_latent_features")
