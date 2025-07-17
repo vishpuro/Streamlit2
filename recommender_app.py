@@ -117,7 +117,7 @@ if model_selection == backend.models[0]:
 	# Add a slide bar for selecting top courses
 	top_courses = st.sidebar.slider('Top courses',min_value=0, max_value=100,value=10, step=1)
 	# Add a slide bar for choosing similarity threshold
-	course_sim_threshold = st.sidebar.slider('Course Similarity Threshold %',min_value=0, max_value=100,value=50, step=10)
+	course_sim_threshold = st.sidebar.slider('Course Similarity Threshold %',min_value=0, max_value=100,value=0, step=1)
 	params['top_courses'] = top_courses
 	params['sim_threshold'] = course_sim_threshold
 	# TODO: Add hyper-parameters for other models
