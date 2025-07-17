@@ -165,7 +165,8 @@ pred_button = st.sidebar.button("Recommend New Courses")
 if pred_button and selected_courses_df.shape[0] <= 0:
 	rated, enrolled = st.tabs(["Top Courses by ratings","Top courses by number enrolled"])
 	with rated:
-		st.write("No courses selected. Here is a list of the top 20 courses by learner ratings to get you started on your journey.")
+		st.success("Welcome! You haven't selected any courses, so you must be new!", icon="✅")
+		st.success("Here is a list of the top 20 courses by learner ratings to get you started on your journey.")
 		ratings_df = load_ratings()
 		res_df=pd.DataFrame(ratings_df[['item','rating']].groupby(by=['item']).mean().sort_values(by='rating',ascending=False)).reset_index(drop=False).iloc[0:20,:]
 		res_df.rename(columns={"item":"COURSE_ID",'rating':"SCORE"},inplace=True)
