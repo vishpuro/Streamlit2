@@ -163,7 +163,7 @@ st.sidebar.subheader('3. Train model and predict results')
 pred_button = st.sidebar.button("Recommend New Courses")
 
 if pred_button and selected_courses_df.shape[0] <= 0:
-	rated, enrolled = st.tabs(["Top Courses by ratings","Top courses by number enrolled"])
+	rated, enrolled = st.tabs(["Top courses by ratings","Top courses by number enrolled"])
 	with rated:
 		st.success("Welcome! You haven't selected any courses, so you must be new!", icon="✅")
 		st.success("Here is a list of the top 20 courses by learner ratings to get you started on your journey.")
