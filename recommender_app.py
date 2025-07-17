@@ -176,7 +176,7 @@ st.sidebar.subheader('3. Train model and predict results')
 pred_button = st.sidebar.button("Recommend New Courses")
 
 if pred_button and selected_courses_df.shape[0] <= 0:
-	st.error("No courses selected. Please Selected courses that you have completed.", icon="🚨")
+	st.error("No courses selected. Please select courses that you have completed.", icon="🚨")
 
 elif pred_button and selected_courses_df.shape[0] > 0:
 	# Create a new id for current user session
