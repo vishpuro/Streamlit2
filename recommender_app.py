@@ -163,7 +163,13 @@ st.sidebar.subheader('3. Train model and predict results')
 pred_button = st.sidebar.button("Recommend New Courses")
 
 if pred_button and selected_courses_df.shape[0] <= 0:
-	st.error("No courses selected. Please select courses that you have completed.", icon="🚨")
+	st.write("No courses selected. Here is a list of the top 20 rated courses")
+	ratings_df = load_ratings()
+	res_df=pd.DataFrame(ratings_df[['item','rating']].groupby(by=['item']).mean().sort_values(by='rating',ascending=False)).reset_index(drop=False).iloc[0:20,:]
+	res_def.rename(columns={"item":"COURSE_ID",'rating':"SCORE"},inplace=True)
+	course_df = load_courses()
+	res_df = pd.merge(res_df, course_df, on=["COURSE_ID"]).drop('COURSE_ID', axis=1)
+	st.dataframe(res_df)
 
 elif pred_button and selected_courses_df.shape[0] > 0:
 	# Create a new id for current user session
