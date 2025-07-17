@@ -7,11 +7,6 @@ from st_aggrid import AgGrid
 from st_aggrid.grid_options_builder import GridOptionsBuilder
 from st_aggrid import GridUpdateMode, DataReturnMode
 
-####--- Sklearn ---####
-#from sklearn.cluster import KMeans
-#from sklearn.preprocessing import StandardScaler
-#from sklearn.decomposition import PCA
-#from sklearn.metrics import silhouette_score
 
 # Basic webpage setup
 st.set_page_config(page_title="Course Recommender System",layout="wide",initial_sidebar_state="expanded")
@@ -165,6 +160,7 @@ elif (model_selection == backend.models[7]) and ('user_latent_features' in st.se
 	params['user_latent_features'] = st.session_state.user_latent_features
 	params['item_latent_features'] = st.session_state.item_latent_features
 	
+	
 elif (model_selection == backend.models[8]) and ('user_latent_features' in st.session_state) and ('item_latent_features' in st.session_state):
 	options_clas = ["Logistic", "Xgboost"]
 	selection_clas = st.sidebar.segmented_control("Classification Algorithm", options_clas, selection_mode="single",default="Logistic")
@@ -196,7 +192,7 @@ if pred_button and selected_courses_df.shape[0] > 0:
 		
 	elif (model_selection == backend.models[7]) or (model_selection == backend.models[8]):
 		if ('user_latent_features' not in st.session_state) or ('item_latent_features' not in st.session_state):
-			st.write("Embeddings not found \nPlease run Neural Network model to generate Embeddings")
+			st.error("Embeddings not found \nPlease run Neural Network model first")
 		else:
 			res_df = predict(model_selection, user_ids, params)
 	else:
