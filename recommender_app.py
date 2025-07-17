@@ -188,6 +188,7 @@ elif pred_button and selected_courses_df.shape[0] > 0:
 		res_df,user_latent_features,item_latent_features = predict(model_selection, user_ids, params)
 		st.session_state['user_latent_features'] = user_latent_features
 		st.session_state['item_latent_features'] = item_latent_features
+		res_df = res_df[['COURSE_ID', 'SCORE']]
 		
 	elif (model_selection == backend.models[7]) or (model_selection == backend.models[8]):
 		if ('user_latent_features' not in st.session_state) or ('item_latent_features' not in st.session_state):
