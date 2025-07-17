@@ -410,7 +410,7 @@ def predict(model_name, user_ids, params):
 	
 		######################################################### model 0 Course Similarity ####################################################
 		if model_name == models[0]:
-			with st.status("Starting course similarity model...", expanded=True):
+			with st.status("Starting course similarity model...", expanded=True) as status:
 				ratings_df = load_ratings()
 				user_ratings = ratings_df[ratings_df['user'] == user_id]
 				enrolled_course_ids = user_ratings['item'].to_list()
@@ -432,7 +432,7 @@ def predict(model_name, user_ids, params):
     				)
 		######################################################### model 1 User profile #########################################################
 		if model_name == models[1]:
-			with st.status("Starting user profile model...", expanded=True):
+			with st.status("Starting user profile model...", expanded=True) as status:
 				ratings_df = load_ratings()
 				course_genres_df = load_course_genres()
 				user_ratings = ratings_df[ratings_df['user'] == user_id]
@@ -472,7 +472,7 @@ def predict(model_name, user_ids, params):
     				)
 		######################################################### model 2 Clustering ###########################################################
 		if model_name == models[2]:
-			with st.status("Starting Clustering model...", expanded=True):
+			with st.status("Starting Clustering model...", expanded=True) as status:
 				ratings_df = load_ratings()
 				course_genres_df = load_course_genres()
 				user_ratings = ratings_df[ratings_df['user'] == user_id]
@@ -556,7 +556,7 @@ def predict(model_name, user_ids, params):
     				)
 		######################################################### model 3 Clustering ###########################################################
 		if model_name == models[3]:
-			with st.status("Starting Clustering (PCA) model...", expanded=True):
+			with st.status("Starting Clustering (PCA) model...", expanded=True) as status:
 				ratings_df = load_ratings()
 				course_genres_df = load_course_genres()
 				user_ratings = ratings_df[ratings_df['user'] == user_id]
@@ -653,7 +653,7 @@ def predict(model_name, user_ids, params):
     				)
 		######################################################### model 4 knn-surprise #############################################            
 		if model_name==models[4]:
-			with st.status("Starting KNN model...", expanded=True):
+			with st.status("Starting KNN model...", expanded=True) as status:
 				reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
 				course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
 				trainset, testset = train_test_split_surprise(course_dataset, test_size=.95)
@@ -693,7 +693,7 @@ def predict(model_name, user_ids, params):
     				)
 		######################################################### model 5 NMF-surprise #############################################            
 		if model_name==models[5]:
-			with st.status("Starting NMF model...", expanded=True):
+			with st.status("Starting NMF model...", expanded=True) as status:
 				reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
 				course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
 				trainset, testset = train_test_split_surprise(course_dataset, test_size=.95)
@@ -733,7 +733,7 @@ def predict(model_name, user_ids, params):
     				)
 		######################################################### model 6 Neural Network#############################################            
 		if model_name==models[6]:
-			with st.status("Starting Neural Network model...", expanded=True):
+			with st.status("Starting Neural Network model...", expanded=True) as status:
 				ratings_df = load_ratings()
 				course_genres_df = load_course_genres()
 				user_ratings = ratings_df[ratings_df['user'] == user_id]
@@ -803,7 +803,7 @@ def predict(model_name, user_ids, params):
     				)
 		######################################################### model 7 Regression models #############################################            
 		if model_name==models[7]:
-			with st.status("Starting Regression model: ", expanded=True):
+			with st.status("Starting Regression model: ", expanded=True) as status:
 				st.write(reg_type,"...")
 				ratings_df = load_ratings()
 				course_genres_df = load_course_genres()
@@ -888,7 +888,7 @@ def predict(model_name, user_ids, params):
     				)
 		######################################################### model 8 Classification models #############################################            
 		if model_name==models[8]:
-			with st.status("Starting Classification model: ", expanded=True):
+			with st.status("Starting Classification model: ", expanded=True) as status:
 				st.write(clas_type,"...")
 				ratings_df = load_ratings()
 				course_genres_df = load_course_genres()
