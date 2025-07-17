@@ -182,6 +182,7 @@ elif pred_button and selected_courses_df.shape[0] > 0:
 			st.error("Embeddings not found. Please run Neural Network model first.", icon="🚨")
 		else:
 			res_df = predict(model_selection, user_ids, params)
+			res_df = res_df[['COURSE_ID', 'SCORE']]
 	else:
 		res_df = predict(model_selection, user_ids, params)
 
