@@ -410,47 +410,58 @@ def predict(model_name, user_ids, params):
 	
 		######################################################### model 0 Course Similarity ####################################################
 		if model_name == models[0]:
-			ratings_df = load_ratings()
-			user_ratings = ratings_df[ratings_df['user'] == user_id]
-			enrolled_course_ids = user_ratings['item'].to_list()
-			res = course_similarity_recommendations(idx_id_dict, id_idx_dict, enrolled_course_ids, sim_matrix)
-			for key, score in res.items():
-				if score >= sim_threshold:
-					users.append(user_id)
-					courses.append(key)
-					scores.append(score)
-			
-			res_dict['USER'] = users
-			res_dict['COURSE_ID'] = courses
-			res_dict['SCORE'] = scores
-			res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID', 'SCORE'])
+			with st.status("Starting course similarity model...", expanded=True):
+				ratings_df = load_ratings()
+				user_ratings = ratings_df[ratings_df['user'] == user_id]
+				enrolled_course_ids = user_ratings['item'].to_list()
+				st.write("Generating recommedadtions based on course similarities...")
+				res = course_similarity_recommendations(idx_id_dict, id_idx_dict, enrolled_course_ids, sim_matrix)
+				for key, score in res.items():
+					if score >= sim_threshold:
+						users.append(user_id)
+						courses.append(key)
+						scores.append(score)
+				st.write("Outputting...")
+				res_dict['USER'] = users
+				res_dict['COURSE_ID'] = courses
+				res_dict['SCORE'] = scores
+				res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID', 'SCORE'])
 		######################################################### model 1 User profile #########################################################
 		if model_name == models[1]:
-			ratings_df = load_ratings()
-			course_genres_df = load_course_genres()
-			user_ratings = ratings_df[ratings_df['user'] == user_id]
-			enrolled_course_ids = user_ratings['item'].to_list()
-			all_courses = set(course_genres_df['COURSE_ID'].values)
-			unknown_courses = all_courses.difference(enrolled_course_ids)
-			
-			add_items={}
-			add_items['user']=np.zeros(len(course_genres_df.COURSE_ID))+ratings_df.user.max()+1
-			add_items['item']=course_genres_df.COURSE_ID
-			add_items['rating']=np.zeros(len(course_genres_df.COURSE_ID))+4
-			
-			ratings_df=pd.concat([ratings_df,pd.DataFrame(add_items)])
-			ratings_ordered_df=ratings_df.pivot(index='user',columns='item',values='rating').fillna(0).loc[:,course_genres_df.COURSE_ID]
-			user_profile_df=pd.DataFrame(np.dot(ratings_ordered_df,course_genres_df.iloc[:,2:]),index=ratings_ordered_df.index,columns=course_genres_df.iloc[:,2:].columns)
-			user_profile_df.drop(ratings_df.user.max(),inplace=True)
-			user_profile_df.reset_index(inplace=True)
-			user_profile_df.to_csv("user_profiles.csv")
-			
-			users,courses,scores = profile_generate_recommendation_scores(user_id,unknown_courses,user_profile_df,course_genres_df)
-			res_dict['USER'] = users
-			res_dict['COURSE_ID'] = courses
-			res_dict['SCORE'] = scores
-			res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID', 'SCORE'])
-			res_df = res_df[res_df['SCORE']>=profile_sim_threshold].sort_values(by='SCORE',ascending=False)
+			with st.status("Starting user profile model...", expanded=True):
+				ratings_df = load_ratings()
+				course_genres_df = load_course_genres()
+				user_ratings = ratings_df[ratings_df['user'] == user_id]
+				enrolled_course_ids = user_ratings['item'].to_list()
+				all_courses = set(course_genres_df['COURSE_ID'].values)
+				unknown_courses = all_courses.difference(enrolled_course_ids)
+				
+				add_items={}
+				add_items['user']=np.zeros(len(course_genres_df.COURSE_ID))+ratings_df.user.max()+1
+				add_items['item']=course_genres_df.COURSE_ID
+				add_items['rating']=np.zeros(len(course_genres_df.COURSE_ID))+4
+				
+				ratings_df=pd.concat([ratings_df,pd.DataFrame(add_items)])
+				ratings_ordered_df=ratings_df.pivot(index='user',columns='item',values='rating').fillna(0).loc[:,course_genres_df.COURSE_ID]
+				
+				st.write("Generating user profiles...")
+				
+				user_profile_df=pd.DataFrame(np.dot(ratings_ordered_df,course_genres_df.iloc[:,2:]),index=ratings_ordered_df.index,columns=course_genres_df.iloc[:,2:].columns)
+				user_profile_df.drop(ratings_df.user.max(),inplace=True)
+				user_profile_df.reset_index(inplace=True)
+				user_profile_df.to_csv("user_profiles.csv")
+
+				st.write("Generating recommendation scores...")
+				
+				users,courses,scores = profile_generate_recommendation_scores(user_id,unknown_courses,user_profile_df,course_genres_df)
+
+				st.write("Outputting...")
+				
+				res_dict['USER'] = users
+				res_dict['COURSE_ID'] = courses
+				res_dict['SCORE'] = scores
+				res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID', 'SCORE'])
+				res_df = res_df[res_df['SCORE']>=profile_sim_threshold].sort_values(by='SCORE',ascending=False)
 		######################################################### model 2 Clustering ###########################################################
 		if model_name == models[2]:
 			with st.status("Starting Clustering model...", expanded=True):
@@ -513,7 +524,7 @@ def predict(model_name, user_ids, params):
 				## - First get all courses belonging to the same cluster and figure out what are the popular ones (such as course enrollments beyond a threshold like 100)
 				cluster_courses=[courses_cluster_grouped[(courses_cluster_grouped['cluster']==i)&(courses_cluster_grouped['enrollments']>=n_erollments)].sort_values(by='enrollments',ascending=False)['item'].tolist() for i in range(courses_cluster_grouped['cluster'].max()+1)]
 				
-				st.write("Outputing results...")
+				st.write("Outputing...")
 				
 				users = []
 				courses = []
@@ -606,7 +617,7 @@ def predict(model_name, user_ids, params):
 				## - First get all courses belonging to the same cluster and figure out what are the popular ones (such as course enrollments beyond a threshold like 100)
 				cluster_courses=[courses_cluster_grouped[(courses_cluster_grouped['cluster']==i)&(courses_cluster_grouped['enrollments']>=n_erollments)].sort_values(by='enrollments',ascending=False)['item'].tolist() for i in range(courses_cluster_grouped['cluster'].max()+1)]
 				
-				st.write("Outputing results...")
+				st.write("Outputing...")
 				
 				users = []
 				courses = []
@@ -630,7 +641,6 @@ def predict(model_name, user_ids, params):
 			with st.status("Starting KNN model...", expanded=True):
 				reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
 				course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
-				#trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
 				trainset, testset = train_test_split_surprise(course_dataset, test_size=.95)
 				model=KNNBasic(k=k_max,sim_option={"name":similarity_measure,"user_based":user_based})
 
@@ -667,7 +677,6 @@ def predict(model_name, user_ids, params):
 			with st.status("Starting NMF model...", expanded=True):
 				reader = Reader(line_format='user item rating', sep=',', skip_lines=1, rating_scale=(3, 5))
 				course_dataset = Dataset.load_from_file("ratings.csv", reader=reader)
-				#trainset=DatasetAutoFolds.build_full_trainset(course_dataset)
 				trainset, testset = train_test_split_surprise(course_dataset, test_size=.95)
 				model=NMF(n_factors=n_factors,random_state=123,n_epochs=100)
 
@@ -714,9 +723,6 @@ def predict(model_name, user_ids, params):
 				
 				encoded_data, user_idx2id_dict, course_idx2id_dict = process_dataset(ratings_df)
 				
-				#st.write(len(course_idx2id_dict))
-				#st.write(len(encoded_data['item'].unique()))
-				
 				encoded_user_id=list(user_idx2id_dict.keys())[list(user_idx2id_dict.values()).index(user_id)]
 				encoded_unknown_courses=[]
 				
@@ -732,7 +738,6 @@ def predict(model_name, user_ids, params):
 				encoded_full=pd.concat([encoded_data.copy(),encoded_test_dataset])
 				x_train, x_val, x_test, y_train, y_val, y_test = generate_train_test_datasets(encoded_data)		
 				
-				#num_users = len(ratings_df['user'].unique())
 				num_users = len(ratings_df.user.unique())
 				num_items = len(course_idx2id_dict)
 				
@@ -746,7 +751,6 @@ def predict(model_name, user_ids, params):
 				history=model.fit(x=x_train, y=y_train,batch_size=64,epochs=10,validation_data=(x_val,y_val),verbose=1,callbacks = [early_stopping,keras.callbacks.ModelCheckpoint("RNN.keras",save_best_only=True)]) 
 				#  - -Save the entire model in the SavedModel format and then save only the weights of the model using 
 				model.save("recommender_net_model.keras")
-				## - - model.save_weights("recommender_net_weights.weights.h5")
 				model.save_weights("recommender_net_weights.weights.h5")
 				
 				st.write("Predicting results...")
@@ -754,6 +758,9 @@ def predict(model_name, user_ids, params):
 				test_data=encoded_test_dataset[['user','item']].to_numpy()
 				pred=model.predict(test_data)
 				pred=(pred*2)+3
+				
+				st.write("Outputting...")
+				
 				test_dataset.loc[:,'rating']=pred
 				res_df=test_dataset
 				res_df.sort_values(by='rating',ascending=False,inplace=True)
@@ -765,8 +772,7 @@ def predict(model_name, user_ids, params):
 				
 				item_latent_features = model.get_layer('item_embedding_layer').get_weights()[0]
 				item_latent_features = pd.DataFrame(item_latent_features,columns=["Item_Feature_"+str(i) for i in range(item_latent_features.shape[1])])
-				#st.write(len(course_idx2id_dict))
-				#st.write(len(encoded_full['item'].unique()))
+
 				item_latent_features['item']=[course_idx2id_dict[i] for i in encoded_full['item'].unique()]
 		######################################################### model 7 Regression models #############################################            
 		if model_name==models[7]:
@@ -827,9 +833,6 @@ def predict(model_name, user_ids, params):
 				# Merge user embedding features
 				user_emb_merged = pd.merge(test_dataset, user_latent_features, how='left', left_on='user', right_on='user').fillna(0)
 				merged_df = pd.merge(user_emb_merged, item_latent_features, how='left', left_on='item', right_on='item').fillna(0)
-				# Define column names for user and course embedding features
-				#u_features = [f"User_Feature_{i}" for i in range(len(user_latent_features.columns)-1)] 
-				#c_features = [f"Item_Feature_{i}" for i in range(len(item_latent_features.columns)-1)]
 				# Extract user embedding features
 				user_embeddings = merged_df[u_features]
 				# Extract course embedding features
@@ -843,9 +846,7 @@ def predict(model_name, user_ids, params):
 				# Add the 'rating' column from the original DataFrame to the regression dataset
 				regression_dataset['rating'] = ratings
 				test_data = regression_dataset.iloc[:, :-1]
-				#y = regression_dataset.iloc[:, -1]
-				#test_data=encoded_test_dataset[['user','item']].to_numpy()
-				#test_data=regression_data.iloc[merged_df[(merged_df['user']==user_id)&(merged_df['item'].isin(unknown_courses))].index,:]
+
 				st.write("Predicting results...")
 				pred=model.predict(test_data)
 
@@ -918,9 +919,7 @@ def predict(model_name, user_ids, params):
 				# Merge user embedding features
 				user_emb_merged = pd.merge(test_dataset, user_latent_features, how='left', left_on='user', right_on='user').fillna(0)
 				merged_df = pd.merge(user_emb_merged, item_latent_features, how='left', left_on='item', right_on='item').fillna(0)
-				# Define column names for user and course embedding features
-				#u_features = [f"User_Feature_{i}" for i in range(len(user_latent_features.columns)-1)] 
-				#c_features = [f"Item_Feature_{i}" for i in range(len(item_latent_features.columns)-1)]
+
 				# Extract user embedding features
 				user_embeddings = merged_df[u_features]
 				# Extract course embedding features
@@ -934,9 +933,6 @@ def predict(model_name, user_ids, params):
 				# Add the 'rating' column from the original DataFrame to the regression dataset
 				interaction_dataset['rating'] = ratings
 				test_data = interaction_dataset.iloc[:, :-1]
-				#y = regression_dataset.iloc[:, -1]
-				#test_data=encoded_test_dataset[['user','item']].to_numpy()
-				#test_data=regression_data.iloc[merged_df[(merged_df['user']==user_id)&(merged_df['item'].isin(unknown_courses))].index,:]
 				st.write("Predicting results...")
 				pred=model.predict(test_data)
 				pred=label_encoder.inverse_transform(pred)
@@ -948,8 +944,6 @@ def predict(model_name, user_ids, params):
 				res_df.rename(columns={'user':'USER','item':'COURSE_ID','rating':'SCORE'},inplace=True)
 	
 	if model_name==models[6]:
-		#st.write("model 6: res_df, user_latent_features, item_latent_features")
 		return res_df,user_latent_features,item_latent_features
 	else:
-		st.write("not mode 6")
 		return res_df
