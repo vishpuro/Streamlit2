@@ -426,6 +426,10 @@ def predict(model_name, user_ids, params):
 				res_dict['COURSE_ID'] = courses
 				res_dict['SCORE'] = scores
 				res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID', 'SCORE'])
+
+				status.update(
+        				label="Model complete!", state="complete", expanded=False
+    				)
 		######################################################### model 1 User profile #########################################################
 		if model_name == models[1]:
 			with st.status("Starting user profile model...", expanded=True):
@@ -462,6 +466,10 @@ def predict(model_name, user_ids, params):
 				res_dict['SCORE'] = scores
 				res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID', 'SCORE'])
 				res_df = res_df[res_df['SCORE']>=profile_sim_threshold].sort_values(by='SCORE',ascending=False)
+
+				status.update(
+        				label="Model complete!", state="complete", expanded=False
+    				)
 		######################################################### model 2 Clustering ###########################################################
 		if model_name == models[2]:
 			with st.status("Starting Clustering model...", expanded=True):
@@ -542,6 +550,10 @@ def predict(model_name, user_ids, params):
 				res_dict['COURSE_ID'] = courses
 				res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID'])
 				res_df=res_df[res_df['USER']==user_id]
+
+				status.update(
+        				label="Model complete!", state="complete", expanded=False
+    				)
 		######################################################### model 3 Clustering ###########################################################
 		if model_name == models[3]:
 			with st.status("Starting Clustering (PCA) model...", expanded=True):
@@ -635,7 +647,10 @@ def predict(model_name, user_ids, params):
 				res_dict['COURSE_ID'] = courses
 				res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID'])
 				res_df=res_df[res_df['USER']==user_id]
-				
+
+				status.update(
+        				label="Model complete!", state="complete", expanded=False
+    				)
 		######################################################### model 4 knn-surprise #############################################            
 		if model_name==models[4]:
 			with st.status("Starting KNN model...", expanded=True):
@@ -672,6 +687,10 @@ def predict(model_name, user_ids, params):
 				res_dict['SCORE'] = scores
 				res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID', 'SCORE'])
 				res_df.sort_values(by='SCORE',ascending=False,inplace=True)
+
+				status.update(
+        				label="Model complete!", state="complete", expanded=False
+    				)
 		######################################################### model 5 NMF-surprise #############################################            
 		if model_name==models[5]:
 			with st.status("Starting NMF model...", expanded=True):
@@ -708,6 +727,10 @@ def predict(model_name, user_ids, params):
 				res_dict['SCORE'] = scores
 				res_df = pd.DataFrame(res_dict, columns=['USER', 'COURSE_ID', 'SCORE'])
 				res_df.sort_values(by='SCORE',ascending=False,inplace=True)
+
+				status.update(
+        				label="Model complete!", state="complete", expanded=False
+    				)
 		######################################################### model 6 Neural Network#############################################            
 		if model_name==models[6]:
 			with st.status("Starting Neural Network model...", expanded=True):
@@ -774,6 +797,10 @@ def predict(model_name, user_ids, params):
 				item_latent_features = pd.DataFrame(item_latent_features,columns=["Item_Feature_"+str(i) for i in range(item_latent_features.shape[1])])
 
 				item_latent_features['item']=[course_idx2id_dict[i] for i in encoded_full['item'].unique()]
+
+				status.update(
+        				label="Model complete!", state="complete", expanded=False
+    				)
 		######################################################### model 7 Regression models #############################################            
 		if model_name==models[7]:
 			with st.status("Starting Regression model: ", expanded=True):
@@ -855,7 +882,10 @@ def predict(model_name, user_ids, params):
 				res_df=test_dataset
 				res_df.sort_values(by='rating',ascending=False,inplace=True)
 				res_df.rename(columns={'user':'USER','item':'COURSE_ID','rating':'SCORE'},inplace=True)
-				
+
+				status.update(
+        				label="Model complete!", state="complete", expanded=False
+    				)
 		######################################################### model 8 Classification models #############################################            
 		if model_name==models[8]:
 			with st.status("Starting Classification model: ", expanded=True):
@@ -942,6 +972,10 @@ def predict(model_name, user_ids, params):
 				res_df=test_dataset
 				res_df.sort_values(by='rating',ascending=False,inplace=True)
 				res_df.rename(columns={'user':'USER','item':'COURSE_ID','rating':'SCORE'},inplace=True)
+
+				status.update(
+        				label="Model complete!", state="complete", expanded=False
+    				)
 	
 	if model_name==models[6]:
 		return res_df,user_latent_features,item_latent_features
