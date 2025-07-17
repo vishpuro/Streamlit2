@@ -175,7 +175,10 @@ st.sidebar.subheader('3. Train model and predict results')
 # Start prediction process
 pred_button = st.sidebar.button("Recommend New Courses")
 
-if pred_button and selected_courses_df.shape[0] > 0:
+if pred_button and selected_courses_df.shape[0] <= 0:
+	st.error("No courses selected. Please Selected courses that you have completed.", icon="🚨")
+
+elif pred_button and selected_courses_df.shape[0] > 0:
 	# Create a new id for current user session
     
 	# Start training process
@@ -192,7 +195,7 @@ if pred_button and selected_courses_df.shape[0] > 0:
 		
 	elif (model_selection == backend.models[7]) or (model_selection == backend.models[8]):
 		if ('user_latent_features' not in st.session_state) or ('item_latent_features' not in st.session_state):
-			st.error("Embeddings not found. Please run Neural Network model first")
+			st.error("Embeddings not found. Please run Neural Network model first.", icon="🚨")
 		else:
 			res_df = predict(model_selection, user_ids, params)
 	else:
