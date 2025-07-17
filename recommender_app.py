@@ -180,11 +180,7 @@ if pred_button and selected_courses_df.shape[0] <= 0:
 
 elif pred_button and selected_courses_df.shape[0] > 0:
 	# Create a new id for current user session
-    
-	# Start training process
 	new_id = backend.add_new_ratings(selected_courses_df['COURSE_ID'].values)
-    
-	#train(model_selection, params) 
     
 	user_ids = [new_id]
 	
