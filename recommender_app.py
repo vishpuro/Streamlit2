@@ -174,7 +174,8 @@ if pred_button and selected_courses_df.shape[0] <= 0:
 		res_df = pd.merge(res_df, course_df, on=["COURSE_ID"]).drop('COURSE_ID', axis=1)
 		st.dataframe(res_df,use_container_width=True)
 	with enrolled:
-		st.write("No courses selected. Here is a list of the top 20 courses by number of learners enrolled to get you started on your journey.")
+		st.success("Welcome! You haven't selected any courses, so you must be new!", icon="✅")
+		st.success("Here is a list of the top 20 courses by number of learners enrolled to get you started on your journey.")
 		ratings_df = load_ratings()
 		res_df=pd.DataFrame(ratings_df[['item','rating']].groupby(by=['item']).size().sort_values(ascending=False),columns=['SCORE']).reset_index(drop=False).iloc[0:20,:]
 		res_df.rename(columns={"item":"COURSE_ID"},inplace=True)
