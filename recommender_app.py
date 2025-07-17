@@ -192,18 +192,18 @@ if pred_button and selected_courses_df.shape[0] > 0:
 		
 	elif (model_selection == backend.models[7]) or (model_selection == backend.models[8]):
 		if ('user_latent_features' not in st.session_state) or ('item_latent_features' not in st.session_state):
-			st.error("Embeddings not found \nPlease run Neural Network model first")
+			st.error("Embeddings not found. Please run Neural Network model first")
 		else:
 			res_df = predict(model_selection, user_ids, params)
 	else:
 		res_df = predict(model_selection, user_ids, params)
-	
-	if (model_selection == backend.models[2])or(model_selection == backend.models[3]):
-		res_df = res_df[['COURSE_ID']]
-	else:
-		res_df = res_df[['COURSE_ID', 'SCORE']]
+
+		if (model_selection == backend.models[2])or(model_selection == backend.models[3]):
+			res_df = res_df[['COURSE_ID']]
+		else:
+			res_df = res_df[['COURSE_ID', 'SCORE']]
 		
-	course_df = load_courses()
-	res_df = pd.merge(res_df, course_df, on=["COURSE_ID"]).drop('COURSE_ID', axis=1)
-	st.dataframe(res_df)
+		course_df = load_courses()
+		res_df = pd.merge(res_df, course_df, on=["COURSE_ID"]).drop('COURSE_ID', axis=1)
+		st.dataframe(res_df)
 
