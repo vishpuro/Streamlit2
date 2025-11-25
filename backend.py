@@ -237,6 +237,21 @@ class RecommenderNet(keras.Model):
 			input_dim=num_items,
 			output_dim=1,
 			name="item_bias")
+		
+	def get_config(self):
+		config = super().get_config()
+		config.update({
+			"num_users": self.num_users,
+   			"num_items": self.num_items,
+			"embedding_size": self.embedding_size,
+   			"user_embedding_layer": self.user_embedding_layer,
+      		"user_dense_layer": self.user_dense_layer,
+			"user_bias": self.user_bias,
+   			"item_embedding_layer": self.item_embedding_layer,
+      		"item_dense_layer": self.item_dense_layer,
+			"item_bias": self.item_bias,
+		})
+		return config
 	
 	def call(self, inputs):
 		"""
