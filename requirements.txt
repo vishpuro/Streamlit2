@@ -8,3 +8,4 @@ tensorflow
 surprise
 xgboost
 altair
+streamlit-nightly
