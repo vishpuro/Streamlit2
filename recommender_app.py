@@ -172,7 +172,7 @@ if pred_button and selected_courses_df.shape[0] <= 0:
 		res_df.rename(columns={"item":"COURSE_ID",'rating':"SCORE"},inplace=True)
 		course_df = load_courses()
 		res_df = pd.merge(res_df, course_df, on=["COURSE_ID"]).drop('COURSE_ID', axis=1)
-		st.dataframe(res_df,use_container_width=True)
+		st.dataframe(res_df,width='stretch')
 	with enrolled:
 		st.success("Welcome! You haven't selected any courses, so you must be new!", icon="✅")
 		st.success("Here is a list of the top 20 courses by number of learners enrolled to get you started on your journey.")
@@ -181,7 +181,7 @@ if pred_button and selected_courses_df.shape[0] <= 0:
 		res_df.rename(columns={"item":"COURSE_ID"},inplace=True)
 		course_df = load_courses()
 		res_df = pd.merge(res_df, course_df, on=["COURSE_ID"]).drop('COURSE_ID', axis=1)
-		st.dataframe(res_df,use_container_width=True)
+		st.dataframe(res_df,width='stretch')
 
 elif pred_button and selected_courses_df.shape[0] > 0:
 	# Create a new id for current user session
