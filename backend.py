@@ -798,6 +798,8 @@ def predict(model_name, user_ids, params):
 				pred=(pred*2)+3
 				
 				st.write("Outputting...")
+				st.write(np.shape(pred))
+				st.write(len(test_dataset.loc[:,'rating']))
 				
 				test_dataset.loc[:,'rating']=pred
 				res_df=test_dataset
