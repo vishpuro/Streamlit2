@@ -896,7 +896,8 @@ def predict(model_name, user_ids, params):
 				pred=model.predict(test_data)
 
 				st.write("Outputting...")
-				test_dataset.loc[:,'rating']=pred
+				#test_dataset.loc[:,'rating']=pred
+				test_dataset['rating']=pred
 				res_df=test_dataset
 				res_df.sort_values(by='rating',ascending=False,inplace=True)
 				res_df.rename(columns={'user':'USER','item':'COURSE_ID','rating':'SCORE'},inplace=True)
@@ -986,7 +987,8 @@ def predict(model_name, user_ids, params):
 				pred=label_encoder.inverse_transform(pred)
 
 				st.write("Outputting...")
-				test_dataset.loc[:,'rating']=pred
+				#test_dataset.loc[:,'rating']=pred
+				test_dataset['rating']=pred
 				res_df=test_dataset
 				res_df.sort_values(by='rating',ascending=False,inplace=True)
 				res_df.rename(columns={'user':'USER','item':'COURSE_ID','rating':'SCORE'},inplace=True)
