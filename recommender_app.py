@@ -59,7 +59,7 @@ def init__recommender_app():
 	response = AgGrid(
 		course_df,
 		gridOptions=grid_options,
-		enable_enterprise_modules=True,
+		#enable_enterprise_modules=True,
 		update_on="modelUpdated",
 		data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
 		fit_columns_on_grid_load=False,)
