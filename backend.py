@@ -788,7 +788,7 @@ def predict(model_name, user_ids, params):
 				model.compile(optimizer=keras.optimizers.Adam(),loss=tf.keras.losses.MeanSquaredError(),metrics=[tf.keras.metrics.RootMeanSquaredError()])
 				history=model.fit(x=x_train, y=y_train,batch_size=64,epochs=10,validation_data=(x_val,y_val),verbose=1,callbacks = [early_stopping,keras.callbacks.ModelCheckpoint("RNN.keras",save_best_only=True)]) 
 				#  - -Save the entire model in the SavedModel format and then save only the weights of the model using 
-				model.save("recommender_net_model.keras")
+				model.save("recommender_net_model",save_format="tf")
 				model.save_weights("recommender_net_weights.weights.h5")
 				
 				st.write("Predicting results...")

@@ -1,0 +1,20 @@
+.git
+.devcontainer
+__pycache__/
+*.py[cod]
+*.pdf
+*.pptx
+*.keras
+*.h5
+*.weights.h5
+user_profiles.csv
+error.txt
+Raw files/
+.venv/
+venv/
+env/
+.env
+.gitignore
+Dockerfile*
+docker-compose*.yml
+compose*.yml

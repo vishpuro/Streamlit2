@@ -1,0 +1,26 @@
+services:
+  web:
+    build:
+      context: .
+      target: runtime
+    image: course-recommender:local
+    container_name: streamlit_recommender
+    ports:
+      - "8501:8501"
+    # The app appends new session ratings to this file.
+    volumes:
+      - ./ratings.csv:/app/ratings.csv
+    environment:
+      STREAMLIT_BROWSER_GATHER_USAGE_STATS: "false"
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3

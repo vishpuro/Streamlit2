@@ -1,9 +1,10 @@
+# Runtime dependencies for Python 3.9 and the Streamlit recommender.
 numpy==1.26.4
-pandas
-streamlit
-streamlit-aggrid
-scipy
-scikit-learn
-tensorflow
-surprise
-xgboost
+pandas==2.2.3
+streamlit==1.40.0
+streamlit-aggrid==1.0.5
+scipy==1.13.1
+scikit-learn==1.5.2
+tensorflow==2.15.1
+scikit-surprise==1.1.4
+xgboost==2.0.3
